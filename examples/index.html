@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<title>scroll</title>
+	<meta name="viewport" content="width=device-width,initial-scale=1">
+	<style type="text/css">
+		body {
+			margin: 0;
+			padding: 1rem;
+			background-color: #888;
+		}
+		.scroller, .skrollah {
+			width: 300px;
+			height: 200px;
+		}
+		.skrollah {
+			position: absolute;
+			left: 50px;
+			top: 400px;
+		}
+		.content1 {
+			height:1100px;
+			width:1500px;
+			padding: 30px;
+			background-color: #CCC;
+			background-image: repeating-linear-gradient(45deg, transparent, transparent 128px, #DDD 128px, #DDD 256px);
+		}
+		/*////////////////////////////////////////////////////////*/
+		.scroller .gutter {
+			background-color: #333;
+			border-radius: 5px;
+		}
+		.scroller .bar {
+			background-color: #EEE;
+			border-radius: 5px;
+		}
+		.scroller .horizontal {
+			top: -10px;
+		}
+		.scroller .vertical {
+			left: -10px;
+		}
+		.button.hor.bw,.button.hor.fw {
+			position: absolute;
+			top: -30px;
+			width: 10px;
+			height: 10px;
+		}
+		.button.hor.bw{ left: 0; }
+		.button.hor.fw{ right: 0; }
+		.button.hor.bw:before{ content:'<'; }
+		.button.hor.fw:before{ content:'>'; }
+	</style>
+</head>
+<body>
+<p class="before">before</p>
+<div class="scroller">
+	<div class="content1"><p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer vehicula quam nibh, eu tristique tellus dignissim quis. Integer condimentum ultrices elit ut mattis. Praesent rhoncus tortor metus, nec pellentesque enim mattis nec. Nulla vitae turpis ut dui consectetur pellentesque quis vel est. Curabitur rutrum, mauris ut mollis lobortis, sem est congue lectus, ut sodales nunc leo a libero. Cras quis sapien in mi fringilla tempus condimentum quis velit. Aliquam id aliquam arcu. Morbi tristique aliquam rutrum. Duis tincidunt, orci suscipit cursus molestie, purus nisi pharetra dui, tempor dignissim felis turpis in mi. Vivamus ullamcorper arcu sit amet mauris egestas egestas. Vestibulum turpis neque, condimentum a tincidunt quis, molestie vel justo. Sed molestie nunc dapibus arcu feugiat, ut sollicitudin metus sagittis. Aliquam a volutpat sem. Quisque id magna ultrices, lobortis dui eget, pretium libero. Curabitur aliquam in ante eu ultricies.</p><p>Quisque vitae tincidunt purus. Vivamus feugiat bibendum erat, nec interdum urna porta sed. Nunc lobortis neque orci, ut suscipit nisl congue feugiat. Vivamus feugiat tellus quis cursus sollicitudin. Curabitur dolor massa, dictum ut ipsum in, porttitor pellentesque ante. Aenean egestas cursus tempor. Maecenas semper tortor sit amet egestas cursus. Mauris porttitor quis nisi ut tincidunt. Curabitur adipiscing eleifend nibh. Praesent mauris leo, consequat vitae orci eget, vestibulum bibendum nisi. Aliquam tempus diam ut tortor cursus, eget sodales augue adipiscing. Nulla at dignissim libero</p><p>Quisque vitae tincidunt purus. Vivamus feugiat bibendum erat, nec interdum urna porta sed. Nunc lobortis neque orci, ut suscipit nisl congue feugiat. Vivamus feugiat tellus quis cursus sollicitudin. Curabitur dolor massa, dictum ut ipsum in, porttitor pellentesque ante. Aenean egestas cursus tempor. Maecenas semper tortor sit amet egestas cursus. Mauris porttitor quis nisi ut tincidunt. Curabitur adipiscing eleifend nibh. Praesent mauris leo, consequat vitae orci eget, vestibulum bibendum nisi. Aliquam tempus diam ut tortor cursus, eget sodales augue adipiscing. Nulla at dignissim libero.</p><p>Quisque vitae tincidunt purus. Vivamus feugiat bibendum erat, nec interdum urna porta sed. Nunc lobortis neque orci, ut suscipit nisl congue feugiat. Vivamus feugiat tellus quis cursus sollicitudin. Curabitur dolor massa, dictum ut ipsum in, porttitor pellentesque ante. Aenean egestas cursus tempor. Maecenas semper tortor sit amet egestas cursus. Mauris porttitor quis nisi ut tincidunt. Curabitur adipiscing eleifend nibh. Praesent mauris leo, consequat vitae orci eget, vestibulum bibendum nisi. Aliquam tempus diam ut tortor cursus, eget sodales augue adipiscing. Nulla at dignissim libero.</p></div>
+</div>
+<p class="between">between</p>
+<div class="skrollah">
+	<div class="content1"><p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer vehicula quam nibh, eu tristique tellus dignissim quis. Integer condimentum ultrices elit ut mattis. Praesent rhoncus tortor metus, nec pellentesque enim mattis nec. Nulla vitae turpis ut dui consectetur pellentesque quis vel est. Curabitur rutrum, mauris ut mollis lobortis, sem est congue lectus, ut sodales nunc leo a libero. Cras quis sapien in mi fringilla tempus condimentum quis velit. Aliquam id aliquam arcu. Morbi tristique aliquam rutrum. Duis tincidunt, orci suscipit cursus molestie, purus nisi pharetra dui, tempor dignissim felis turpis in mi. Vivamus ullamcorper arcu sit amet mauris egestas egestas. Vestibulum turpis neque, condimentum a tincidunt quis, molestie vel justo. Sed molestie nunc dapibus arcu feugiat, ut sollicitudin metus sagittis. Aliquam a volutpat sem. Quisque id magna ultrices, lobortis dui eget, pretium libero. Curabitur aliquam in ante eu ultricies.</p><p>Quisque vitae tincidunt purus. Vivamus feugiat bibendum erat, nec interdum urna porta sed. Nunc lobortis neque orci, ut suscipit nisl congue feugiat. Vivamus feugiat tellus quis cursus sollicitudin. Curabitur dolor massa, dictum ut ipsum in, porttitor pellentesque ante. Aenean egestas cursus tempor. Maecenas semper tortor sit amet egestas cursus. Mauris porttitor quis nisi ut tincidunt. Curabitur adipiscing eleifend nibh. Praesent mauris leo, consequat vitae orci eget, vestibulum bibendum nisi. Aliquam tempus diam ut tortor cursus, eget sodales augue adipiscing. Nulla at dignissim libero</p><p>Quisque vitae tincidunt purus. Vivamus feugiat bibendum erat, nec interdum urna porta sed. Nunc lobortis neque orci, ut suscipit nisl congue feugiat. Vivamus feugiat tellus quis cursus sollicitudin. Curabitur dolor massa, dictum ut ipsum in, porttitor pellentesque ante. Aenean egestas cursus tempor. Maecenas semper tortor sit amet egestas cursus. Mauris porttitor quis nisi ut tincidunt. Curabitur adipiscing eleifend nibh. Praesent mauris leo, consequat vitae orci eget, vestibulum bibendum nisi. Aliquam tempus diam ut tortor cursus, eget sodales augue adipiscing. Nulla at dignissim libero.</p><p>Quisque vitae tincidunt purus. Vivamus feugiat bibendum erat, nec interdum urna porta sed. Nunc lobortis neque orci, ut suscipit nisl congue feugiat. Vivamus feugiat tellus quis cursus sollicitudin. Curabitur dolor massa, dictum ut ipsum in, porttitor pellentesque ante. Aenean egestas cursus tempor. Maecenas semper tortor sit amet egestas cursus. Mauris porttitor quis nisi ut tincidunt. Curabitur adipiscing eleifend nibh. Praesent mauris leo, consequat vitae orci eget, vestibulum bibendum nisi. Aliquam tempus diam ut tortor cursus, eget sodales augue adipiscing. Nulla at dignissim libero.</p></div>
+</div>
+<p class="after">after</p>
+<script src="../src/scrolla.js" type="text/javascript"></script>
+<script>
+	scroller(document.querySelector('.scroller'),{});
+	scroller(document.querySelector('.skrollah'),{});
+</script>
+</body>
+</html>

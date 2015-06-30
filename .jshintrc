@@ -1,0 +1,34 @@
+{
+    "globals": {
+    	"iddqd": true
+    	,"_": true
+    	,"sjeiti": true
+    	,"angular": true
+		,"app": true
+		,"module": true
+		,"require": true
+		,"Promise": true
+		,"TweenMax": true
+		,"Strong": true
+	},
+    "strict": true,
+    "browser": true,
+    "jquery": true,
+    "devel": true,
+    "plusplus": false,
+    "white": false,
+    "nomen": false,
+    "noarg": true,
+    "nonew": true,
+    "undef": true,
+    "unused": true,
+    "trailing": true,
+    "laxcomma": true,
+    "loopfunc": true,
+    "scripturl": true,
+    "smarttabs": true,
+    "boss": true,
+    "expr": true,
+    "noempty": false,
+    "laxbreak": true
+}
