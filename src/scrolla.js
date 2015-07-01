@@ -60,6 +60,7 @@ window.scrolla = (function(window,document){
 		,classnameVertical = 'vertical'
 		,classnameForward = 'forward'
 		,classnameBackward = 'backward'
+		,classnameInactive = 'inactive'
 		,stringPx = 'px'
 		,eventClick = 'click'
 		,eventMousedown = 'mousedown'
@@ -139,9 +140,11 @@ window.scrolla = (function(window,document){
 			options.classnameVertical&&(classnameVertical=options.classnameVertical);
 		}
 		insertRule('.'+classnameBase+' .'+classnameGutter+' { position: absolute; background-color: rgba(0,0,0,.2); z-index: 1; }');
-		insertRule('.'+classnameBase+' .'+classnameBar+' { position: absolute; background-color: gray; }');
+		insertRule('.'+classnameBase+' .'+classnameBar+' { position: absolute; background-color: gray; cursor: pointer; }');
 		insertRule('.'+classnameBase+' .'+classnameHorizontal+' .'+classnameBar+' { height: 100%; min-width: 1px; }');
 		insertRule('.'+classnameBase+' .'+classnameVertical+' .'+classnameBar+' { width: 100%; min-height: 1px; }');
+		insertRule('.'+classnameBase+' .'+classnameButton+' { cursor: pointer; }');
+		insertRule('.'+classnameBase+' .'+classnameInactive+' { display: none; }');
 		//
 		insertRule('.'+classnameBase+' { position: relative; overflow: visible!important; }');
 		insertRule('.'+classnameBase+' .'+classnameWrapper+' { position: relative; width: 100%; height: 100%; overflow: hidden; }');
@@ -180,19 +183,20 @@ window.scrolla = (function(window,document){
 	 * @param {HTMLElement} element
 	 * @param {Object} [options]
 	 * @returns scrollaInstance
+	 * @todo: describe options
 	 */
 	function instantiate(element,options){
 		options = extend(options||{},defaultOptions);
 		!isInitialised&&init();
 		var /*hash = btoa(Date.now()%1E6)
-			,*/gutterHor = createDiv()
-			,barHor = createDiv()
-			,gutterVer = createDiv()
-			,barVer = createDiv()
-			,left = createDiv()
-			,right = createDiv()
-			,top = createDiv()
-			,bottom = createDiv()
+			,*/gutterHor = options.gutterHor||createDiv()
+			,barHor = options.barHor||createDiv()
+			,gutterVer = options.gutterVer||createDiv()
+			,barVer = options.barVer||createDiv()
+			,left = options.left||createDiv()
+			,right = options.right||createDiv()
+			,top = options.top||createDiv()
+			,bottom = options.bottom||createDiv()
 			// the private scroll instance
 			,inst = {
 				base: createDiv()
@@ -316,31 +320,31 @@ window.scrolla = (function(window,document){
 	 * @param {scrollaPrivateInstance} inst
 	 */
 	function initGutterAndBar(inst){
-		[inst.hor,inst.ver].forEach(function(o){
-			var isHorizontal = o.gutter===inst.gutterHor
+		[inst.hor,inst.ver].forEach(function(dir){
+			var isHorizontal = dir.gutter===inst.gutterHor
 				,sizePrll = getParallel(isHorizontal)
 				,sizePrpd = getPerpendicular(isHorizontal)
 			;
-			o.gutterClassList.add(classnameGutter);
-			o.gutterClassList.add(isHorizontal?classnameHorizontal:classnameVertical);
-			o.gutterStyle[sizePrll] = o.viewportSize+stringPx;
-			o.gutterStyle[sizePrpd] = inst.gutterSize+stringPx;
-			o.bar.classList.add(classnameBar);
-			o.gutter.addEventListener(eventClick,handleGutterClick.bind(o.gutter,inst,isHorizontal));
+			dir.gutterClassList.add(classnameGutter);
+			dir.gutterClassList.add(isHorizontal?classnameHorizontal:classnameVertical);
+			dir.gutterStyle[sizePrll] = dir.viewportSize+stringPx;
+			dir.gutterStyle[sizePrpd] = inst.gutterSize+stringPx;
+			dir.bar.classList.add(classnameBar);
+			dir.gutter.addEventListener(eventClick,handleGutterClick.bind(dir.gutter,inst,isHorizontal));
 			//
-			o.barStyle[sizePrll] = o.barSize + stringPx;
-			o.bar.addEventListener(eventMousedown,handleBarMousedown.bind(o.bar,inst,isHorizontal));
-			o.bar.addEventListener(eventTouchstart,handleBarMousedown.bind(o.bar,inst,isHorizontal));
-			o.bar.addEventListener(eventClick,handleStopPropagation);
-			o.gutter.appendChild(o.bar);
-			inst.base.insertBefore(o.gutter,inst.wrapper);
+			dir.barStyle[sizePrll] = dir.barSize + stringPx;
+			dir.bar.addEventListener(eventMousedown,handleBarMousedown.bind(dir.bar,inst,isHorizontal));
+			dir.bar.addEventListener(eventTouchstart,handleBarMousedown.bind(dir.bar,inst,isHorizontal));
+			dir.bar.addEventListener(eventClick,handleStopPropagation);
+			dir.gutter.appendChild(dir.bar);
+			inst.base.insertBefore(dir.gutter,inst.wrapper);
 			//
-			[o.backward,o.forward].forEach(function(button,i){
+			[dir.backward,dir.forward].forEach(function(button,i){
 				button.classList.add(classnameButton);
 				button.classList.add(isHorizontal?classnameHorizontal:classnameVertical);
 				button.classList.add(i===0?classnameBackward:classnameForward);
 				inst.base.insertBefore(button,inst.wrapper);
-				button.addEventListener(eventClick,handleButtonClick.bind(button,inst,isHorizontal,button===o.forward));
+				button.addEventListener(eventClick,handleButtonClick.bind(button,inst,isHorizontal,button===dir.forward));
 			});
 		});
 	}
@@ -452,10 +456,21 @@ window.scrolla = (function(window,document){
 	 * @param {scrollaPrivateInstance} inst
 	 */
 	function resize(inst){
+		// recalculate sizes
 		inst.viewportW = inst.base.offsetWidth;
 		inst.viewportH = inst.base.offsetHeight;
 		inst.barHorSize = getBarSize(inst,true);
 		inst.barVerSize = getBarSize(inst,false);
+		// check inactive elements
+		var isHorInActive = inst.barHorSize>=inst.viewportW
+			,isVerInActive = inst.barVerSize>=inst.viewportH;
+		inst.gutterHor.classList.toggle(classnameInactive,isHorInActive);
+		inst.gutterVer.classList.toggle(classnameInactive,isVerInActive);
+		inst.left.classList.toggle(classnameInactive,isHorInActive);
+		inst.right.classList.toggle(classnameInactive,isHorInActive);
+		inst.top.classList.toggle(classnameInactive,isVerInActive);
+		inst.bottom.classList.toggle(classnameInactive,isVerInActive);
+		// set positions
 		setBarPos(inst,true);
 		setBarPos(inst,false);
 		[inst.hor,inst.ver].forEach(function(o){

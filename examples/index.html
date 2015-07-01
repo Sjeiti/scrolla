@@ -81,20 +81,39 @@
 <section class="example2">
 	<h3>positioned and animated</h3>
 	<div class="instance2">
+		<div class="left">&lt;</div>
+		<div class="right">&gt;</div>
 		<div class="content1"><p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer vehicula quam nibh, eu tristique tellus dignissim quis. Integer condimentum ultrices elit ut mattis. Praesent rhoncus tortor metus, nec pellentesque enim mattis nec. Nulla vitae turpis ut dui consectetur pellentesque quis vel est. Curabitur rutrum, mauris ut mollis lobortis, sem est congue lectus, ut sodales nunc leo a libero. Cras quis sapien in mi fringilla tempus condimentum quis velit. Aliquam id aliquam arcu. Morbi tristique aliquam rutrum. Duis tincidunt, orci suscipit cursus molestie, purus nisi pharetra dui, tempor dignissim felis turpis in mi. Vivamus ullamcorper arcu sit amet mauris egestas egestas. Vestibulum turpis neque, condimentum a tincidunt quis, molestie vel justo. Sed molestie nunc dapibus arcu feugiat, ut sollicitudin metus sagittis. Aliquam a volutpat sem. Quisque id magna ultrices, lobortis dui eget, pretium libero. Curabitur aliquam in ante eu ultricies.</p><p>Quisque vitae tincidunt purus. Vivamus feugiat bibendum erat, nec interdum urna porta sed. Nunc lobortis neque orci, ut suscipit nisl congue feugiat. Vivamus feugiat tellus quis cursus sollicitudin. Curabitur dolor massa, dictum ut ipsum in, porttitor pellentesque ante. Aenean egestas cursus tempor. Maecenas semper tortor sit amet egestas cursus. Mauris porttitor quis nisi ut tincidunt. Curabitur adipiscing eleifend nibh. Praesent mauris leo, consequat vitae orci eget, vestibulum bibendum nisi. Aliquam tempus diam ut tortor cursus, eget sodales augue adipiscing. Nulla at dignissim libero</p><p>Quisque vitae tincidunt purus. Vivamus feugiat bibendum erat, nec interdum urna porta sed. Nunc lobortis neque orci, ut suscipit nisl congue feugiat. Vivamus feugiat tellus quis cursus sollicitudin. Curabitur dolor massa, dictum ut ipsum in, porttitor pellentesque ante. Aenean egestas cursus tempor. Maecenas semper tortor sit amet egestas cursus. Mauris porttitor quis nisi ut tincidunt. Curabitur adipiscing eleifend nibh. Praesent mauris leo, consequat vitae orci eget, vestibulum bibendum nisi. Aliquam tempus diam ut tortor cursus, eget sodales augue adipiscing. Nulla at dignissim libero.</p><p>Quisque vitae tincidunt purus. Vivamus feugiat bibendum erat, nec interdum urna porta sed. Nunc lobortis neque orci, ut suscipit nisl congue feugiat. Vivamus feugiat tellus quis cursus sollicitudin. Curabitur dolor massa, dictum ut ipsum in, porttitor pellentesque ante. Aenean egestas cursus tempor. Maecenas semper tortor sit amet egestas cursus. Mauris porttitor quis nisi ut tincidunt. Curabitur adipiscing eleifend nibh. Praesent mauris leo, consequat vitae orci eget, vestibulum bibendum nisi. Aliquam tempus diam ut tortor cursus, eget sodales augue adipiscing. Nulla at dignissim libero.</p></div>
 	</div>
 	<button>add</button>
 	<style>
+		.example2 {
+			height: 250px;
+		}
 		.instance2 {
+			position: absolute;
+			right: 50px;
+			top: 10px;
 			width: 300px;
 			height: 200px;
 			overflow: scroll;
 		}
+		.example2 .left, .example2 .right {
+			position: absolute;
+			top: 50px;
+			font: bold 18px/18px mono;
+			text-align: center;
+		}
+		.example2 .left { left: -20px; }
+		.example2 .right { right: -20px; }
 	</style>
 	<script>
+		var instance2 = document.querySelector('.instance2');
 		document.querySelector('button').addEventListener('click',function(e){
-			scrolla(document.querySelector('.instance2'),{
-				animatedStepCallback: function(o){
+			scrolla(instance2,{
+				left: instance2.querySelector('.left')
+				,right: instance2.querySelector('.right')
+				,animatedStepCallback: function(o){
 					var tweenProp = {
 						onUpdate: o.updateBar
 						,ease: Elastic.easeOut
