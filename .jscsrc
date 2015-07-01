@@ -8,7 +8,7 @@
 	,"disallowNewlineBeforeBlockStatements": true
 	,"disallowOperatorBeforeLineBreak": true
 	,"disallowPaddingNewlinesInBlocks": true
-	,"disallowQuotedKeysInObjects": true
+	,"disallowQuotedKeysInObjects": "allButReserved"
 	,"disallowSpaceAfterObjectKeys": true
 	,"disallowSpaceAfterPrefixUnaryOperators": ["++", "--", "+", "-", "~", "!"]
 	,"disallowSpaceBeforePostfixUnaryOperators": ["++", "--"]

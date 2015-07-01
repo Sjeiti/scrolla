@@ -1,7 +1,7 @@
 {
   "name": "Scrolla",
   "description": "Scrolla",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "repository": "https://github.com/Sjeiti/scrolla.git",
   "devDependencies": {
     "grunt": "~0.4.2",

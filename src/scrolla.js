@@ -1,6 +1,6 @@
 /**
  * Scrolla is a pure-js, cross-everything scrollbar script.
- * @version 0.0.3
+ * @version 0.0.4
  * @license MIT/GPL
  * @author Ron Valstar <ron@ronvalstar.nl>
  * @copyright Ron Valstar <ron@ronvalstar.nl>
@@ -78,6 +78,24 @@ window.scrolla = (function(window,document){
 		,baseStyleSheet
 		,viewportRule
 		,contentRule
+		//
+		,dimensionDefaultStyles = {
+			width:'auto'
+			,'min-width':'0px'
+			,'max-width':'none'
+			,height:'auto'
+			,'min-height':'0px'
+			,'max-height':'none'
+			,position:'static'
+			,left:'auto'
+			,right:'auto'
+			,top:'auto'
+			,bottom:'auto'
+		}
+		,dimensionStyles = (function(a){
+			for (var s in dimensionDefaultStyles) a.push(s);
+			return a;
+		})([])
 		//
 		,isInitialised = false
 		//
@@ -163,7 +181,7 @@ window.scrolla = (function(window,document){
 	 * @returns scrollaInstance
 	 */
 	function instantiate(element,options){
-		extend(options,defaultOptions);
+		options = extend(options||{},defaultOptions);
 		!isInitialised&&init();
 		var /*hash = btoa(Date.now()%1E6)
 			,*/gutterHor = createDiv()
@@ -176,10 +194,10 @@ window.scrolla = (function(window,document){
 			,bottom = createDiv()
 			// the private scroll instance
 			,inst = {
-				base: element
+				base: createDiv()
 				,wrapper: createDiv()
 				//
-				,viewport: createDiv()
+				,viewport: element
 				,viewportW: element.offsetWidth
 				,viewportH: element.offsetHeight
 				,viewportScrollW: element.scrollWidth
@@ -218,12 +236,15 @@ window.scrolla = (function(window,document){
 			,instancePublic = {
 				step: stepViewport.bind(stepViewport,inst)
 			}
+			//console.log('viewportW',inst.viewportW); // log
+			//console.log('viewportH',inst.viewportH); // log
 		;
 		// set other instance variables
 		inst.resize = resize.bind(resize,inst);
 		/*extend(inst,{
 			resize: resize.bind(resize,inst)
 		});*/
+
 		//
 		// initalise
 		initWrapper(inst,element);
@@ -245,12 +266,19 @@ window.scrolla = (function(window,document){
 	 * @param {HTMLElement} element
 	 */
 	function initWrapper(inst,element){
+		// classnames
 		inst.base.classList.add(classnameBase);
 		inst.wrapper.classList.add(classnameWrapper);
 		inst.viewport.classList.add(classnameViewport);
-		while (element.childNodes.length) {
-			inst.viewport.appendChild(element.childNodes[0]);
+		// set base element dimensions
+		var defaultStyles = getDefaultStyles(element,dimensionStyles)
+			,baseStyle = inst.base.style;
+		for (var cssProperty in defaultStyles) {
+			var styleValue = defaultStyles[cssProperty];
+			styleValue!==dimensionDefaultStyles[cssProperty]&&(baseStyle[cssProperty] = styleValue);
 		}
+		// structure
+		element.parentNode.insertBefore(inst.base,element);
 		inst.base.appendChild(inst.wrapper);
 		inst.wrapper.appendChild(inst.viewport);
 	}
@@ -573,6 +601,25 @@ window.scrolla = (function(window,document){
 	 */
 	function extend(target,source){
 		for (var s in source) target[s] = source[s];
+		return target;
+	}
+
+	/**
+	 * Get the CSS style values of an element (not the computed values).
+	 * @param {HTMLElement} element
+	 * @param {Array} props
+	 * @returns {Object}
+	 */
+	function getDefaultStyles(element,props) {
+		var parent = element.parentNode
+			,computedStyle = getComputedStyle(element)
+			,values = {};
+		parent.style.display = 'none';
+		props.forEach(function(prop){
+			values[prop] = computedStyle.getPropertyValue(prop);
+		});
+		parent.style.removeProperty('display');
+		return values;
 	}
 
 	// todo: add api
