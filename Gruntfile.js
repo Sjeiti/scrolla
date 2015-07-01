@@ -47,12 +47,19 @@ module.exports = function (grunt) {
 					,wrap: true
 					,mangle: true
 					// below not working ???
-					//,mangleProperties: true
+					//mangleProperties: true
 					//,reserveDOMProperties: true
 					//,exceptionsFiles: ['uglify-reserved.json']
 				}
 				,src: 'src/scrolla.js'
 				,dest: 'dist/scrolla.min.js'
+			}
+			,gzip: {
+				options: {
+					compress: true
+				}
+				,src: 'src/scrolla.js'
+				,dest: 'dist/scrolla.jgz'
 			}
 		}
 

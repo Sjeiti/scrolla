@@ -1,6 +1,3 @@
 node_modules
-src/js/vendor
-dist
-.tmp<% if (includeSass) { %>
 .idea/workspace.xml
 .idea/tasks.xml
