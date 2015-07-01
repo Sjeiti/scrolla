@@ -50,6 +50,7 @@ window.scrolla = (function(window,document){
 	'use strict';
 
 	var /*baseHash = btoa(Date.now()%1E6)
+		,forEach = Array.prototype.forEach
 		,*/classnameBase = 'scrolla'
 		,classnameWrapper = 'wrapper'
 		,classnameViewport = 'viewport'
@@ -61,6 +62,7 @@ window.scrolla = (function(window,document){
 		,classnameForward = 'forward'
 		,classnameBackward = 'backward'
 		,classnameInactive = 'inactive'
+		,classnameAllInline = 'all-inline'
 		,stringPx = 'px'
 		,eventClick = 'click'
 		,eventMousedown = 'mousedown'
@@ -69,7 +71,6 @@ window.scrolla = (function(window,document){
 		,eventTouchstart = 'touchstart'
 		,eventTouchmove = 'touchmove'
 		,eventTouchend = 'touchend'
-		//,forEach = Array.prototype.forEach
 		,createElement = document.createElement.bind(document)
 		,createDiv = createElement.bind(document,'div')
 		,body = document.body
@@ -79,6 +80,8 @@ window.scrolla = (function(window,document){
 		,baseStyleSheet
 		,viewportRule
 		,contentRule
+		,allInlineRule
+		,allInlineLastRule
 		//
 		,dimensionDefaultStyles = {
 			width:'auto'
@@ -148,9 +151,12 @@ window.scrolla = (function(window,document){
 		//
 		insertRule('.'+classnameBase+' { position: relative; overflow: visible!important; }');
 		insertRule('.'+classnameBase+' .'+classnameWrapper+' { position: relative; width: 100%; height: 100%; overflow: hidden; }');
-		viewportRule = insertRule('.'+classnameBase+' .'+classnameViewport+' { box-sizing: content-box; position: absolute; top: 0; left: 0; width: 100%; height: 100%; padding-right: 17px; padding-bottom: 17px; overflow: scroll; }');
+		viewportRule = insertRule('.'+classnameBase+' .'+classnameViewport+' { box-sizing: content-box; position: absolute; top: 0; left: 0; width: 100%; height: 100%; margin: 0; padding-right: 17px; padding-bottom: 17px; overflow: scroll; }');
 		insertRule('.'+classnameBase+' .'+classnameViewport+' * { box-sizing: border-box; }');
 		contentRule = insertRule('.'+classnameBase+' .'+classnameViewport+' *:last-child { margin-bottom: -17px; }');
+		//
+		allInlineRule = insertRule('.'+classnameBase+' .'+classnameAllInline+'>* { margin-bottom: -17px; }');
+		allInlineLastRule = insertRule('.'+classnameBase+' .'+classnameAllInline+'>*:last-child { margin-right: -17px; }');
 	}
 
 	/**
@@ -160,6 +166,8 @@ window.scrolla = (function(window,document){
 		var size = getBrowserScrollbarSize();
 		viewportRule.style.paddingRight = viewportRule.style.paddingBottom = size+stringPx;
 		contentRule.style.marginBottom = -size+stringPx;
+		allInlineRule.style.marginBottom = -size+stringPx;
+		allInlineLastRule.style.marginRight = -size+stringPx;
 	}
 
 	/**
@@ -242,8 +250,6 @@ window.scrolla = (function(window,document){
 				step: stepViewport.bind(stepViewport,inst)
 				,resize: resize.bind(resize,inst)
 			}
-			//console.log('viewportW',inst.viewportW); // log
-			//console.log('viewportH',inst.viewportH); // log
 		;
 		// set other instance variables
 		inst.resize = instancePublic.resize;
@@ -257,6 +263,9 @@ window.scrolla = (function(window,document){
 		initHorVer(inst);
 		initGutterAndBar(inst);
 		initViewport(inst);
+		//
+		//inst.viewportScrollW = element.scrollWidth; // todo: changes after initWrapper for inline content
+		//inst.viewportScrollH = element.scrollHeight;
 		//
 		instances.push(inst);
 		//
@@ -276,6 +285,7 @@ window.scrolla = (function(window,document){
 		inst.base.classList.add(classnameBase);
 		inst.wrapper.classList.add(classnameWrapper);
 		inst.viewport.classList.add(classnameViewport);
+		//
 		// set base element dimensions
 		var defaultStyles = getDefaultStyles(element,dimensionStyles)
 			,baseStyle = inst.base.style;
@@ -287,6 +297,20 @@ window.scrolla = (function(window,document){
 		element.parentNode.insertBefore(inst.base,element);
 		inst.base.appendChild(inst.wrapper);
 		inst.wrapper.appendChild(inst.viewport);
+		//
+		// check for inline contents
+		var allInline = true
+			,children = element.children;
+		for (var i=0,l=children.length;i<l;i++) {
+			var child = children[i]
+				,computedStyle = getComputedStyle(child)
+				,display = computedStyle.getPropertyValue('display');
+			if (display.indexOf('inline')==-1) {
+				allInline = false;
+				break;
+			}
+		}
+		allInline&&inst.viewport.classList.add(classnameAllInline);
 	}
 
 	/**
@@ -410,12 +434,12 @@ window.scrolla = (function(window,document){
 				,lastClient = isTouch?lastE.touches[0]:lastE
 			,offset = horizontal?client.clientX - lastClient.clientX:client.clientY - lastClient.clientY
 			,dir = horizontal?inst.hor:inst.ver
+			,barPos = Math.min(Math.max(dir.barPos + offset,0),dir.viewportSize-dir.barSize)
 		;
+		//dir.barPos = Math.min(Math.max(dir.barPos + offset,0),dir.viewportSize-dir.barSize);
+		//dir.barStyle[horizontal?'left':'top'] = dir.barPos+stringPx;
 		//
-		dir.barPos = Math.min(Math.max(dir.barPos + offset,0),dir.viewportSize-dir.barSize);
-		dir.barStyle[horizontal?'left':'top'] = dir.barPos+stringPx;
-		//
-		inst.viewport[getScroll(horizontal)] = (dir.barPos/dir.viewportSize)*dir.viewportScrollSize;
+		inst.viewport[getScroll(horizontal)] = (barPos/dir.viewportSize)*dir.viewportScrollSize;
 		//
 		e.preventDefault();
 		lastEvent = e;
@@ -461,6 +485,8 @@ window.scrolla = (function(window,document){
 		inst.viewportH = inst.base.offsetHeight;
 		inst.barHorSize = getBarSize(inst,true);
 		inst.barVerSize = getBarSize(inst,false);
+		//inst.viewportScrollW = inst.viewport.scrollWidth; // todo: changes after initWrapper for inline content
+		//inst.viewportScrollH = inst.viewport.scrollHeight;
 		// check inactive elements
 		var isHorInActive = inst.barHorSize>=inst.viewportW
 			,isVerInActive = inst.barVerSize>=inst.viewportH;
@@ -501,10 +527,11 @@ window.scrolla = (function(window,document){
 	function setBarPos(inst,horizontal){ // todo: refactor
 		//var dir = horizontal?inst.hor:inst.ver;
 		if (horizontal) {
-			inst.barHorPos = inst.viewport.scrollWidth===0?0:(inst.viewport.scrollLeft/inst.viewport.scrollWidth)*inst.viewportW;
+			inst.barHorPos = inst.viewportScrollW===0?0:(inst.viewport.scrollLeft/inst.viewportScrollW)*inst.viewportW;
 			inst.barHorStyle.left = inst.barHorPos + stringPx;
+			//console.log('setBarPos',inst.viewportScrollW,inst.viewport.scrollWidth,inst.viewport.scrollLeft); // log
 		} else {
-			inst.barVerPos = inst.viewport.scrollTop===0?0:(inst.viewport.scrollTop/inst.viewport.scrollHeight)*inst.viewportH;
+			inst.barVerPos = inst.viewportScrollH===0?0:(inst.viewport.scrollTop/inst.viewportScrollH)*inst.viewportH;
 			inst.barVerStyle.top = inst.barVerPos + stringPx;
 		}
 	}
