@@ -145,7 +145,8 @@ window.scrolla = (function(window,document){
 		//
 		insertRule('.'+classnameBase+' { position: relative; overflow: visible!important; }');
 		insertRule('.'+classnameBase+' .'+classnameWrapper+' { position: relative; width: 100%; height: 100%; overflow: hidden; }');
-		viewportRule = insertRule('.'+classnameBase+' .'+classnameViewport+' { position: absolute; top: 0; left: 0; width: 100%; height: 100%; padding-right: 17px; padding-bottom: 17px; overflow: scroll; }');
+		viewportRule = insertRule('.'+classnameBase+' .'+classnameViewport+' { box-sizing: content-box; position: absolute; top: 0; left: 0; width: 100%; height: 100%; padding-right: 17px; padding-bottom: 17px; overflow: scroll; }');
+		insertRule('.'+classnameBase+' .'+classnameViewport+' * { box-sizing: border-box; }');
 		contentRule = insertRule('.'+classnameBase+' .'+classnameViewport+' *:last-child { margin-bottom: -17px; }');
 	}
 
@@ -235,12 +236,13 @@ window.scrolla = (function(window,document){
 			}
 			,instancePublic = {
 				step: stepViewport.bind(stepViewport,inst)
+				,resize: resize.bind(resize,inst)
 			}
 			//console.log('viewportW',inst.viewportW); // log
 			//console.log('viewportH',inst.viewportH); // log
 		;
 		// set other instance variables
-		inst.resize = resize.bind(resize,inst);
+		inst.resize = instancePublic.resize;
 		/*extend(inst,{
 			resize: resize.bind(resize,inst)
 		});*/
