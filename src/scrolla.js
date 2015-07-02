@@ -25,14 +25,12 @@
  * @property {Number} gutterSize
  * @property {HTMLElement} gutterHor
  * @property {DOMTokenList} gutterHorClassList
- * @property {CSSStyleDeclaration} gutterHorStyle
  * @property {HTMLElement} barHor
  * @property {CSSStyleDeclaration} barHorStyle
  * @property {Number} barHorSize
  * @property {Number} barHorPos
  * @property {HTMLElement} gutterVer
  * @property {DOMTokenList} gutterVerClassList
- * @property {CSSStyleDeclaration} gutterVerStyle
  * @property {HTMLElement} barVer
  * @property {CSSStyleDeclaration} barVerStyle
  * @property {Number} barVerSize
@@ -40,11 +38,28 @@
  * @property {Function} handleBarDrag
  * @property {Function} handleBarMouseup
  * @property {Function} resize
+ * @property {boolean} allInline
  * @property {HTMLElement} left
  * @property {HTMLElement} right
  * @property {HTMLElement} top
  * @property {HTMLElement} bottom
  * @property {Function} animatedStepCallback
+ * @property {scrollaDirection} hor
+ * @property {scrollaDirection} ver
+ */
+/**
+ * The scrolla direction (horizontal or vertical)
+ * @typedef {Object} scrollaDirection
+ * @property {Number} viewportSize viewportW or viewportH
+ * @property {Number} viewportScrollSize viewportScrollW or viewportScrollH
+ * @property {HTMLElement} gutter gutterHor or gutterVer
+ * @property {DOMTokenList} gutterClassList gutterHorClassList or gutterVerClassList
+ * @property {HTMLElement} bar barHor or barVer
+ * @property {CSSStyleDeclaration} barStyle barHorStyle or barVerStyle
+ * @property {Number} barSize barHorSize or barVerSize
+ * @property {Number} barPos barHorPos or barVerPos
+ * @property {HTMLElement} backward left or top
+ * @property {HTMLElement} forward right or bottom
  */
 window.scrolla = (function(window,document){
 	'use strict';
@@ -75,13 +90,10 @@ window.scrolla = (function(window,document){
 		,createDiv = createElement.bind(document,'div')
 		,body = document.body
 		,head = document.head
-		,lastEvent = null
 		//
 		,baseStyleSheet
-		,viewportRule
-		,contentRule
-		,allInlineRule
-		,allInlineLastRule
+		//
+		,scrollBarSize = getBrowserScrollbarSize()
 		//
 		,dimensionDefaultStyles = {
 			width:'auto'
@@ -95,6 +107,10 @@ window.scrolla = (function(window,document){
 			,right:'auto'
 			,top:'auto'
 			,bottom:'auto'
+			,'margin-left':'0px'
+			,'margin-right':'0px'
+			,'margin-top':'0px'
+			,'margin-bottom':'0px'
 		}
 		,dimensionStyles = (function(a){
 			for (var s in dimensionDefaultStyles) a.push(s);
@@ -107,6 +123,7 @@ window.scrolla = (function(window,document){
 
 		}
 		//
+		,instancesNr = 0
 		,instances = []
 	;
 
@@ -124,7 +141,6 @@ window.scrolla = (function(window,document){
 	 */
 	function init(options){
 		initCSS(options);
-		initBrowserScrollbarSize();
 		initEvents();
 		isInitialised = true;
 	}
@@ -142,32 +158,64 @@ window.scrolla = (function(window,document){
 			options.classnameHorizontal&&(classnameHorizontal=options.classnameHorizontal);
 			options.classnameVertical&&(classnameVertical=options.classnameVertical);
 		}
-		insertRule('.'+classnameBase+' .'+classnameGutter+' { position: absolute; background-color: rgba(0,0,0,.2); z-index: 1; }');
-		insertRule('.'+classnameBase+' .'+classnameBar+' { position: absolute; background-color: gray; cursor: pointer; }');
-		insertRule('.'+classnameBase+' .'+classnameHorizontal+' .'+classnameBar+' { height: 100%; min-width: 1px; }');
-		insertRule('.'+classnameBase+' .'+classnameVertical+' .'+classnameBar+' { width: 100%; min-height: 1px; }');
-		insertRule('.'+classnameBase+' .'+classnameButton+' { cursor: pointer; }');
-		insertRule('.'+classnameBase+' .'+classnameInactive+' { display: none; }');
+		// gutter
+		insertRule('.'+classnameBase+' .'+classnameGutter+' {'
+			+'position: absolute;'
+			+'background-color: rgba(0,0,0,.2);'
+			+'z-index: 1;}');
+		insertRule('.'+classnameBase+' .'+classnameGutter+'.'+classnameHorizontal+' {'
+			+'width: 100%;}');
+		insertRule('.'+classnameBase+' .'+classnameGutter+'.'+classnameVertical+' {'
+			+'height: 100%;}');
+		// bar
+		insertRule('.'+classnameBase+' .'+classnameBar+' {'
+			+'position: absolute;'
+			+'background-color: gray;'
+			+'cursor: pointer;}');
+		insertRule('.'+classnameBase+' .'+classnameHorizontal+' .'+classnameBar+' {'
+			+'height: 100%;'
+			+'min-width: 1px;}');
+		insertRule('.'+classnameBase+' .'+classnameVertical+' .'+classnameBar+' {'
+			+'width: 100%;'
+			+'min-height: 1px;}');
+		// button
+		insertRule('.'+classnameBase+' .'+classnameButton+' {'
+			+'cursor: pointer;}');
+		// inactive
+		insertRule('.'+classnameBase+' .'+classnameInactive+' {'
+			+'display: none;}');
 		//
-		insertRule('.'+classnameBase+' { position: relative; overflow: visible!important; }');
-		insertRule('.'+classnameBase+' .'+classnameWrapper+' { position: relative; width: 100%; height: 100%; overflow: hidden; }');
-		viewportRule = insertRule('.'+classnameBase+' .'+classnameViewport+' { box-sizing: content-box; position: absolute; top: 0; left: 0; width: 100%; height: 100%; margin: 0; padding-right: 17px; padding-bottom: 17px; overflow: scroll; }');
-		insertRule('.'+classnameBase+' .'+classnameViewport+' * { box-sizing: border-box; }');
-		contentRule = insertRule('.'+classnameBase+' .'+classnameViewport+' *:last-child { margin-bottom: -17px; }');
 		//
-		allInlineRule = insertRule('.'+classnameBase+' .'+classnameAllInline+'>* { margin-bottom: -17px; }');
-		allInlineLastRule = insertRule('.'+classnameBase+' .'+classnameAllInline+'>*:last-child { margin-right: -17px; }');
-	}
-
-	/**
-	 * Calculate browser scrollbar size and apply to CSS rules.
-	 */
-	function initBrowserScrollbarSize(){
-		var size = getBrowserScrollbarSize();
-		viewportRule.style.paddingRight = viewportRule.style.paddingBottom = size+stringPx;
-		contentRule.style.marginBottom = -size+stringPx;
-		allInlineRule.style.marginBottom = -size+stringPx;
-		allInlineLastRule.style.marginRight = -size+stringPx;
+		// base
+		insertRule('.'+classnameBase+' {'
+			+'position: relative;'
+			+'overflow: visible!important; }');
+		// wrapper
+		insertRule('.'+classnameBase+' .'+classnameWrapper+' {'
+			+'position: relative;'
+			+'width: 100%;'
+			+'height: 100%;'
+			+'overflow: hidden; }');
+		// viewport
+		insertRule('.'+classnameBase+' .'+classnameViewport+' {'
+			+'box-sizing: content-box;'
+			+'position: absolute;'
+			+'top: 0;'
+			+'left: 0;'
+			+'width: 100%;'
+			+'height: 100%;'
+			+'margin: 0;'
+			+'padding: 0 '+scrollBarSize+'px '+scrollBarSize+'px 0;'
+			+'overflow: scroll; }');
+		// viewport content
+		insertRule('.'+classnameBase+' .'+classnameViewport+' * {'
+			+'box-sizing: border-box; }');
+		insertRule('.'+classnameBase+' .'+classnameViewport+' *:last-child {'
+			+'margin-bottom: -'+scrollBarSize+'px; }');
+		insertRule('.'+classnameBase+' .'+classnameAllInline+'>* {'
+			+'margin-bottom: -'+scrollBarSize+'px; }');
+		insertRule('.'+classnameBase+' .'+classnameAllInline+'>*:last-child {'
+			+'margin-right: -'+scrollBarSize+'px; }');
 	}
 
 	/**
@@ -207,7 +255,8 @@ window.scrolla = (function(window,document){
 			,bottom = options.bottom||createDiv()
 			// the private scroll instance
 			,inst = {
-				base: createDiv()
+				id: classnameBase+(instancesNr++)
+				,base: createDiv()
 				,wrapper: createDiv()
 				//
 				,viewport: element
@@ -220,7 +269,6 @@ window.scrolla = (function(window,document){
 				// horizontal gutter
 				,gutterHor: gutterHor
 				,gutterHorClassList: gutterHor.classList
-				,gutterHorStyle: gutterHor.style
 				,barHor: barHor
 				,barHorStyle: barHor.style
 				,barHorSize: null
@@ -228,7 +276,6 @@ window.scrolla = (function(window,document){
 				// vertical gutter
 				,gutterVer: gutterVer
 				,gutterVerClassList: gutterVer.classList
-				,gutterVerStyle: gutterVer.style
 				,barVer: barVer
 				,barVerStyle: barVer.style
 				,barVerSize: null
@@ -238,6 +285,8 @@ window.scrolla = (function(window,document){
 				,handleBarMouseup: null
 				//
 				,resize: null
+				//
+				,allInline: true
 				//
 				,left: left
 				,right: right
@@ -283,6 +332,8 @@ window.scrolla = (function(window,document){
 	function initWrapper(inst,element){
 		// classnames
 		inst.base.classList.add(classnameBase);
+		inst.base.classList.add(classnameBase+'-'+inst.viewport.nodeName.toLowerCase());
+		inst.base.classList.add(inst.id);
 		inst.wrapper.classList.add(classnameWrapper);
 		inst.viewport.classList.add(classnameViewport);
 		//
@@ -299,18 +350,17 @@ window.scrolla = (function(window,document){
 		inst.wrapper.appendChild(inst.viewport);
 		//
 		// check for inline contents
-		var allInline = true
-			,children = element.children;
+		var children = element.children;
 		for (var i=0,l=children.length;i<l;i++) {
 			var child = children[i]
 				,computedStyle = getComputedStyle(child)
 				,display = computedStyle.getPropertyValue('display');
 			if (display.indexOf('inline')==-1) {
-				allInline = false;
+				inst.allInline = false;
 				break;
 			}
 		}
-		allInline&&inst.viewport.classList.add(classnameAllInline);
+		inst.allInline&&inst.viewport.classList.add(classnameAllInline);
 	}
 
 	/**
@@ -326,7 +376,6 @@ window.scrolla = (function(window,document){
 				,set viewportScrollSize(v){ if (horizontal) inst.viewportScrollW = v; else inst.viewportScrollH = v; }
 				,gutter: horizontal?inst.gutterHor:inst.gutterVer
 				,gutterClassList: horizontal?inst.gutterHorClassList:inst.gutterVerClassList
-				,gutterStyle: horizontal?inst.gutterHorStyle:inst.gutterVerStyle
 				,bar: horizontal?inst.barHor:inst.barVer
 				,barStyle: horizontal?inst.barHorStyle:inst.barVerStyle
 				,get barSize(){ return horizontal?inst.barHorSize:inst.barVerSize; }
@@ -351,8 +400,10 @@ window.scrolla = (function(window,document){
 			;
 			dir.gutterClassList.add(classnameGutter);
 			dir.gutterClassList.add(isHorizontal?classnameHorizontal:classnameVertical);
-			dir.gutterStyle[sizePrll] = dir.viewportSize+stringPx;
-			dir.gutterStyle[sizePrpd] = inst.gutterSize+stringPx;
+			//
+			insertRule('.'+inst.id+' .gutter.'+(isHorizontal?classnameHorizontal:classnameVertical)+' {'
+				+sizePrpd+': '+inst.gutterSize+stringPx+';');
+			//
 			dir.bar.classList.add(classnameBar);
 			dir.gutter.addEventListener(eventClick,handleGutterClick.bind(dir.gutter,inst,isHorizontal));
 			//
@@ -398,7 +449,7 @@ window.scrolla = (function(window,document){
 	 */
 	function handleGutterClick(inst,horizontal,e){
 		// todo: Firefox bug
-		var dir = horizontal?inst.hor:inst.ver
+		var dir = getDirection(inst,horizontal)
 			,pos = horizontal?e.offsetX:e.offsetY
 		;
 		stepViewport(inst,horizontal,pos>dir.barPos);
@@ -411,7 +462,9 @@ window.scrolla = (function(window,document){
 	 * @param {MouseEvent} e
 	 */
 	function handleBarMousedown(inst,horizontal,e){
-		inst.handleBarDrag = handleBarDrag.bind(window,inst,horizontal,e);
+		var dir = getDirection(inst,horizontal)
+			,orgBarPos = dir.barPos;
+		inst.handleBarDrag = handleBarDrag.bind(window,inst,horizontal,orgBarPos,e);
 		inst.handleBarMouseup = handleBarMouseup.bind(window,inst);
 		window.addEventListener(eventMousemove,inst.handleBarDrag);
 		window.addEventListener(eventTouchmove,inst.handleBarDrag);
@@ -424,25 +477,22 @@ window.scrolla = (function(window,document){
 	 * Handle bar drag event.
 	 * @param {scrollaPrivateInstance} inst
 	 * @param {boolean} horizontal
+	 * @param {Number} orgBarPos
 	 * @param {MouseEvent} eDown
 	 * @param {MouseEvent} e
 	 */
-	function handleBarDrag(inst,horizontal,eDown,e){
-		var lastE = lastEvent||eDown
+	function handleBarDrag(inst,horizontal,orgBarPos,eDown,e){
+		var dir = getDirection(inst,horizontal)
 			,isTouch = e.type===eventTouchmove
-				,client = isTouch?e.touches[0]:e
-				,lastClient = isTouch?lastE.touches[0]:lastE
+			,client = isTouch?e.touches[0]:e
+			,lastClient = isTouch?eDown.touches[0]:eDown
 			,offset = horizontal?client.clientX - lastClient.clientX:client.clientY - lastClient.clientY
-			,dir = horizontal?inst.hor:inst.ver
-			,barPos = Math.min(Math.max(dir.barPos + offset,0),dir.viewportSize-dir.barSize)
+			,barPos = Math.min(Math.max(orgBarPos + offset,0),dir.viewportSize-dir.barSize)
 		;
-		//dir.barPos = Math.min(Math.max(dir.barPos + offset,0),dir.viewportSize-dir.barSize);
-		//dir.barStyle[horizontal?'left':'top'] = dir.barPos+stringPx;
 		//
 		inst.viewport[getScroll(horizontal)] = (barPos/dir.viewportSize)*dir.viewportScrollSize;
 		//
 		e.preventDefault();
-		lastEvent = e;
 	}
 
 	/**
@@ -454,7 +504,6 @@ window.scrolla = (function(window,document){
 		window.removeEventListener(eventTouchmove,inst.handleBarDrag);
 		window.removeEventListener(eventMouseup,inst.handleBarMouseup);
 		window.removeEventListener(eventTouchend,inst.handleBarMouseup);
-		lastEvent = null;
 	}
 
 	/**
@@ -483,13 +532,15 @@ window.scrolla = (function(window,document){
 		// recalculate sizes
 		inst.viewportW = inst.base.offsetWidth;
 		inst.viewportH = inst.base.offsetHeight;
+		//inst.viewportW = inst.viewport.offsetWidth;
+		//inst.viewportH = inst.viewport.offsetHeight;
+		inst.viewportScrollW = inst.viewport.scrollWidth;// + (inst.allInline?-scrollBarSize:0); // todo: changes after initWrapper for inline content
+		inst.viewportScrollH = inst.viewport.scrollHeight;// + (inst.allInline?-scrollBarSize:0);
 		inst.barHorSize = getBarSize(inst,true);
 		inst.barVerSize = getBarSize(inst,false);
-		//inst.viewportScrollW = inst.viewport.scrollWidth; // todo: changes after initWrapper for inline content
-		//inst.viewportScrollH = inst.viewport.scrollHeight;
 		// check inactive elements
-		var isHorInActive = inst.barHorSize>=inst.viewportW
-			,isVerInActive = inst.barVerSize>=inst.viewportH;
+		var isHorInActive = inst.viewportScrollW<=inst.viewportW
+			,isVerInActive = inst.viewportScrollH<=inst.viewportH;
 		inst.gutterHor.classList.toggle(classnameInactive,isHorInActive);
 		inst.gutterVer.classList.toggle(classnameInactive,isVerInActive);
 		inst.left.classList.toggle(classnameInactive,isHorInActive);
@@ -502,10 +553,7 @@ window.scrolla = (function(window,document){
 		[inst.hor,inst.ver].forEach(function(o){
 			var isHorizontal = o.gutter===inst.gutterHor
 				,sizePrll = getParallel(isHorizontal)
-				,sizePrpd = getPerpendicular(isHorizontal)
 			;
-			o.gutterStyle[sizePrll] = o.viewportSize+stringPx;
-			o.gutterStyle[sizePrpd] = inst.gutterSize+stringPx;
 			o.barStyle[sizePrll] = o.barSize + stringPx;
 		});
 	}
@@ -516,7 +564,9 @@ window.scrolla = (function(window,document){
 	 * @param {boolean} horizontal
 	 */
 	function getBarSize(inst,horizontal){
-		return horizontal?inst.viewportW/inst.viewportScrollW*inst.viewportW:inst.viewportH/inst.viewportScrollH*inst.viewportH;
+		var dir = getDirection(inst,horizontal);
+		return dir.viewportSize/dir.viewportScrollSize*dir.viewportSize;
+		//return horizontal?inst.viewportW/inst.viewportScrollW*inst.viewportW:inst.viewportH/inst.viewportScrollH*inst.viewportH;
 	}
 
 	/**
@@ -543,7 +593,7 @@ window.scrolla = (function(window,document){
 	 * @param {boolean} forward
 	 */
 	function stepViewport(inst,horizontal,forward){
-		var dir = horizontal?inst.hor:inst.ver
+		var dir = getDirection(inst,horizontal)
 			,scrollDir = getScroll(horizontal)
 			,scrollFrom = parseFloat(inst.viewport[scrollDir])
 			,scrollTo = scrollFrom + (forward?1:-1)*dir.viewportSize
@@ -636,6 +686,16 @@ window.scrolla = (function(window,document){
 	 */
 	function getScroll(horizontal){
 		return horizontal?'scrollLeft':'scrollTop';
+	}
+
+	/**
+	 * Get the direction object.
+	 * @param {scrollaPrivateInstance} inst
+	 * @param {boolean} horizontal
+	 * @returns {scrollaDirection}
+	 */
+	function getDirection(inst,horizontal){
+		return horizontal?inst.hor:inst.ver;
 	}
 
 	/**
