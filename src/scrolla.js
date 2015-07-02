@@ -1,6 +1,6 @@
 /**
  * Scrolla is a pure-js, cross-everything scrollbar script.
- * @version 0.0.6
+ * @version 0.0.7
  * @license MIT/GPL
  * @author Ron Valstar <ron@ronvalstar.nl>
  * @copyright Ron Valstar <ron@ronvalstar.nl>
