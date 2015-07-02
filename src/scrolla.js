@@ -11,10 +11,13 @@
  * @typedef {Object} scrollaInstance
  * @property {Function} step
  * @property {Function} resize
+ * @property {HTMLElement} element
  */
 /**
  * The private scrolla instance
  * @typedef {Object} scrollaPrivateInstance
+ * @property {string} id
+ * @property {string} class
  * @property {HTMLElement} base
  * @property {HTMLElement} wrapper
  * @property {HTMLElement} viewport
@@ -140,9 +143,13 @@ window.scrolla = (function(window,document){
 	 * @param {String} [options.classnameVertical='vertical']
 	 */
 	function init(options){
-		initCSS(options);
-		initEvents();
-		isInitialised = true;
+		if (!isInitialised) {
+			initCSS(options);
+			initEvents();
+			isInitialised = true;
+			return true;
+		}
+		return false;
 	}
 
 	/**
@@ -253,9 +260,11 @@ window.scrolla = (function(window,document){
 			,right = options.right||createDiv()
 			,top = options.top||createDiv()
 			,bottom = options.bottom||createDiv()
+			,instanceId = classnameBase+(instancesNr++)
 			// the private scroll instance
 			,inst = {
-				id: classnameBase+(instancesNr++)
+				id: options.id||instanceId
+				,class: options.class||instanceId
 				,base: createDiv()
 				,wrapper: createDiv()
 				//
@@ -298,14 +307,14 @@ window.scrolla = (function(window,document){
 			,instancePublic = {
 				step: stepViewport.bind(stepViewport,inst)
 				,resize: resize.bind(resize,inst)
+				,element: inst.base
 			}
 		;
 		// set other instance variables
 		inst.resize = instancePublic.resize;
-		/*extend(inst,{
-			resize: resize.bind(resize,inst)
-		});*/
-
+		//
+		// expose public instance to element
+		inst.base.scrolla = instancePublic;
 		//
 		// initalise
 		initWrapper(inst,element);
@@ -313,14 +322,10 @@ window.scrolla = (function(window,document){
 		initGutterAndBar(inst);
 		initViewport(inst);
 		//
-		//inst.viewportScrollW = element.scrollWidth; // todo: changes after initWrapper for inline content
-		//inst.viewportScrollH = element.scrollHeight;
-		//
 		instances.push(inst);
 		//
 		inst.resize();
 		//
-		inst.base.scrolla = instancePublic;
 		return instancePublic;
 	}
 
@@ -333,7 +338,8 @@ window.scrolla = (function(window,document){
 		// classnames
 		inst.base.classList.add(classnameBase);
 		inst.base.classList.add(classnameBase+'-'+inst.viewport.nodeName.toLowerCase());
-		inst.base.classList.add(inst.id);
+		inst.base.classList.add(inst.class);
+		inst.base.setAttribute('id',inst.id);
 		inst.wrapper.classList.add(classnameWrapper);
 		inst.viewport.classList.add(classnameViewport);
 		//
@@ -401,7 +407,7 @@ window.scrolla = (function(window,document){
 			dir.gutterClassList.add(classnameGutter);
 			dir.gutterClassList.add(isHorizontal?classnameHorizontal:classnameVertical);
 			//
-			insertRule('.'+inst.id+' .gutter.'+(isHorizontal?classnameHorizontal:classnameVertical)+' {'
+			insertRule('.'+inst.class+' .gutter.'+(isHorizontal?classnameHorizontal:classnameVertical)+' {'
 				+sizePrpd+': '+inst.gutterSize+stringPx+';');
 			//
 			dir.bar.classList.add(classnameBar);
@@ -727,6 +733,13 @@ window.scrolla = (function(window,document){
 	}
 
 	// todo: add api
-	instantiate.init = init;
+	//instantiate.init = init;
+	Object.defineProperty(instantiate, 'init', {
+		enumerable: false
+		,configurable: false
+		,writable: false
+		,value: init
+	});
+
 	return instantiate;
 })(window,document);
