@@ -350,6 +350,11 @@ window.scrolla = (function(window,document){
 			var styleValue = defaultStyles[cssProperty];
 			styleValue!==dimensionDefaultStyles[cssProperty]&&(baseStyle[cssProperty] = styleValue);
 		}
+		// if no height is set revert to offetHeight
+		if (baseStyle.height===''&&baseStyle.minHeight===''){
+			baseStyle.height = inst.viewport.offsetHeight+stringPx;
+		}
+		//
 		// structure
 		element.parentNode.insertBefore(inst.base,element);
 		inst.base.appendChild(inst.wrapper);
