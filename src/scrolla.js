@@ -11,6 +11,7 @@
  * @typedef {Object} scrollaInstance
  * @property {Function} step
  * @property {Function} resize
+ * @property {Function} enable
  * @property {HTMLElement} element
  */
 /**
@@ -80,6 +81,7 @@ window.scrolla = (function(window,document){
 		,classnameForward = 'forward'
 		,classnameBackward = 'backward'
 		,classnameInactive = 'inactive'
+		,classnameDisabled = 'disabled'
 		,classnameAllInline = 'all-inline'
 		,stringPx = 'px'
 		,eventClick = 'click'
@@ -123,7 +125,7 @@ window.scrolla = (function(window,document){
 		,isInitialised = false
 		//
 		,defaultOptions = {
-
+			// todo
 		}
 		//
 		,instancesNr = 0
@@ -223,6 +225,34 @@ window.scrolla = (function(window,document){
 			+'margin-bottom: -'+scrollBarSize+'px; }');
 		insertRule('.'+classnameBase+' .'+classnameAllInline+'>*:last-child {'
 			+'margin-right: -'+scrollBarSize+'px; }');
+		//
+		// disable
+		insertRule('.'+classnameBase+'.'+classnameDisabled+' {'
+			+'height: auto!important; }');
+		// wrapper
+		insertRule('.'+classnameBase+'.'+classnameDisabled+' .'+classnameWrapper+' {'
+			+'position: static;'
+			+'width: auto;'
+			+'height: auto;'
+			+'overflow: auto; }');
+		// viewport
+		insertRule('.'+classnameBase+'.'+classnameDisabled+' .'+classnameViewport+' {'
+			+'position: static;'
+			+'width: auto;'
+			+'height: auto;'
+			+'padding: 0;'
+			+'overflow: auto; }');
+		// ui
+		insertRule('.'+classnameBase+'.'+classnameDisabled+' .'+classnameGutter+','
+			+'.'+classnameBase+'.'+classnameDisabled+' .'+classnameButton+' {'
+			+'display: none; }');
+		// viewport content
+		insertRule('.'+classnameBase+'.'+classnameDisabled+' .'+classnameViewport+'>*:last-child {'
+			+'margin-bottom: 0px; }');
+		insertRule('.'+classnameBase+'.'+classnameDisabled+' .'+classnameAllInline+'>* {'
+			+'margin-bottom: 0px; }');
+		insertRule('.'+classnameBase+'.'+classnameDisabled+' .'+classnameAllInline+'>*:last-child {'
+			+'margin-right: 0px; }');
 	}
 
 	/**
@@ -306,7 +336,8 @@ window.scrolla = (function(window,document){
 			}
 			,instancePublic = {
 				step: stepViewport.bind(stepViewport,inst)
-				,resize: resize.bind(resize,inst)
+				,resize: resize.bind(null,inst)
+				,enable: disenable.bind(null,inst)
 				,element: inst.base
 			}
 		;
@@ -352,7 +383,7 @@ window.scrolla = (function(window,document){
 		}
 		// if no height is set revert to offetHeight
 		if (baseStyle.height===''&&baseStyle.minHeight===''){
-			baseStyle.height = inst.viewport.offsetHeight+stringPx;
+			baseStyle.height = inst.viewportH+stringPx;
 		}
 		//
 		// structure
@@ -619,6 +650,15 @@ window.scrolla = (function(window,document){
 			,to: scrollTo
 			,updateBar: setBarPos.bind(null,inst,horizontal)
 		});
+	}
+
+	/**
+	 * Disable or enable
+	 * @param {scrollaPrivateInstance} inst
+	 * @param {boolean} enable
+	 */
+	function disenable(inst,enable){
+		inst.base.classList.toggle(classnameDisabled,!enable);
 	}
 
 	/**
