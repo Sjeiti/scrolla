@@ -85,5 +85,6 @@ module.exports = function (grunt) {
 
 	grunt.registerTask('version',[
 		'version_git'
+		,'js'
 	]);
 };

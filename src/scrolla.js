@@ -1,6 +1,6 @@
 /**
  * Scrolla is a pure-js, cross-everything scrollbar script.
- * @version 0.0.7
+ * @version 0.0.8
  * @license MIT/GPL
  * @author Ron Valstar <ron@ronvalstar.nl>
  * @copyright Ron Valstar <ron@ronvalstar.nl>
@@ -217,7 +217,7 @@ window.scrolla = (function(window,document){
 		// viewport content
 		insertRule('.'+classnameBase+' .'+classnameViewport+' * {'
 			+'box-sizing: border-box; }');
-		insertRule('.'+classnameBase+' .'+classnameViewport+' *:last-child {'
+		insertRule('.'+classnameBase+' .'+classnameViewport+'>*:last-child {'
 			+'margin-bottom: -'+scrollBarSize+'px; }');
 		insertRule('.'+classnameBase+' .'+classnameAllInline+'>* {'
 			+'margin-bottom: -'+scrollBarSize+'px; }');
