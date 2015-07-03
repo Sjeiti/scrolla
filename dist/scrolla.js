@@ -239,7 +239,6 @@ window.scrolla = (function(window,document){
 	 * @param {HTMLElement} [options.top=HTMLDivElement]
 	 * @param {HTMLElement} [options.bottom=HTMLDivElement]
 	 * @returns scrollaInstance
-	 * @todo add stepsize: a percentage to step by
 	 */
 	function scrolla(element,options){
 		options = extend(options||{},defaultOptions);

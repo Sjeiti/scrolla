@@ -1,18 +1,30 @@
 {
   "name": "Scrolla",
   "description": "Scrolla",
-  "version": "0.0.8",
+  "version": "0.0.10",
   "repository": "https://github.com/Sjeiti/scrolla.git",
   "devDependencies": {
     "grunt": "~0.4.2",
     "grunt-contrib-watch": "~0.6.1",
     "grunt-contrib-jshint": "~0.8.0",
-    "grunt-contrib-clean": "~0.5.0",
+    "grunt-contrib-clean": "~0.6.0",
     "grunt-contrib-uglify": "^0.6.0",
     "load-grunt-tasks": "~0.4.0",
     "time-grunt": "~0.3.1",
     "grunt-version-git": "~0.3.1",
-    "grunt-jscs": "~1.8.0"
+    "grunt-jscs": "~1.8.0",
+    "jsdoc": "~3.3.0-alpha11",
+    "grunt-contrib-copy": "~0.8.0",
+    "mkdirp": "~0.5.1"
   },
-  "dependencies": {}
+  "dependencies": {},
+  "autoupdate": {
+    "source": "git",
+    "target": "git://github.com/Sjeiti/scrolla.git",
+    "basePath": "dist",
+    "files": [
+      "scrolla.js",
+      "scrolla.min.js"
+    ]
+  }
 }
