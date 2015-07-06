@@ -1,6 +1,6 @@
 /**
  * Scrolla is a pure-js, cross-everything scrollbar script.
- * @version 0.0.10
+ * @version 0.0.11
  * @license MIT/GPL
  * @author Ron Valstar <ron@ronvalstar.nl>
  * @copyright Ron Valstar <ron@ronvalstar.nl>
@@ -40,6 +40,7 @@ window.scrolla = (function(window,document){
 		,baseStyleSheet
 		//
 		,scrollBarSize = getBrowserScrollbarSize()
+		,stepSize = 0.95// todo: make setable
 		//
 		,dimensionDefaultStyles = {
 			width:'auto'
@@ -112,46 +113,68 @@ window.scrolla = (function(window,document){
 			options.classnameHorizontal&&(classnameHorizontal=options.classnameHorizontal);
 			options.classnameVertical&&(classnameVertical=options.classnameVertical);
 		}
+		// selectors
+		var d = '.'
+			,g = '>'
+			,selectorBase = d+classnameBase
+			,selectorWrapper = selectorBase+g+d+classnameWrapper
+			,selectorViewport = selectorWrapper+g+d+classnameViewport
+			,selectorAllInline = selectorWrapper+g+d+classnameAllInline
+			//
+			,selectorBaseDisabled = d+classnameBase+d+classnameDisabled
+			,selectorWrapperDisabled = selectorBaseDisabled+g+d+classnameWrapper
+			,selectorViewportDisabled = selectorWrapperDisabled+g+d+classnameViewport
+			,selectorAllInlineDisabled = selectorWrapperDisabled+g+d+classnameAllInline
+			//
+			,selectorGutter = selectorBase+g+d+classnameGutter
+			,selectorGutterH = selectorGutter+d+classnameHorizontal
+			,selectorGutterV = selectorGutter+d+classnameVertical
+			,selectorBar = selectorGutter+g+d+classnameBar
+			,selectorBarH = selectorGutterH+g+d+classnameBar
+			,selectorBarV = selectorGutterV+g+d+classnameBar
+			,selectorButton = selectorBase+g+d+classnameButton
+			,selectorInactive = selectorBase+g+d+classnameInactive
+		;
 		// gutter
-		insertRule('.'+classnameBase+' .'+classnameGutter+' {'
+		insertRule(selectorGutter+'{'
 			+'position: absolute;'
 			+'background-color: rgba(0,0,0,.2);'
 			+'z-index: 1;}');
-		insertRule('.'+classnameBase+' .'+classnameGutter+'.'+classnameHorizontal+' {'
+		insertRule(selectorGutterH+'{'
 			+'width: 100%;}');
-		insertRule('.'+classnameBase+' .'+classnameGutter+'.'+classnameVertical+' {'
+		insertRule(selectorGutterV+'{'
 			+'height: 100%;}');
 		// bar
-		insertRule('.'+classnameBase+' .'+classnameBar+' {'
+		insertRule(selectorBar+'{'
 			+'position: absolute;'
 			+'background-color: gray;'
 			+'cursor: pointer;}');
-		insertRule('.'+classnameBase+' .'+classnameHorizontal+' .'+classnameBar+' {'
+		insertRule(selectorBarH+'{'
 			+'height: 100%;'
 			+'min-width: 1px;}');
-		insertRule('.'+classnameBase+' .'+classnameVertical+' .'+classnameBar+' {'
+		insertRule(selectorBarV+'{'
 			+'width: 100%;'
 			+'min-height: 1px;}');
 		// button
-		insertRule('.'+classnameBase+' .'+classnameButton+' {'
+		insertRule(selectorButton+'{'
 			+'cursor: pointer;}');
 		// inactive
-		insertRule('.'+classnameBase+' .'+classnameInactive+' {'
+		insertRule(selectorInactive+'{'
 			+'display: none;}');
 		//
 		//
 		// base
-		insertRule('.'+classnameBase+' {'
+		insertRule(selectorBase+'{'
 			+'position: relative;'
 			+'overflow: visible!important; }');
 		// wrapper
-		insertRule('.'+classnameBase+' .'+classnameWrapper+' {'
+		insertRule(selectorWrapper+'{'
 			+'position: relative;'
 			+'width: 100%;'
 			+'height: 100%;'
 			+'overflow: hidden; }');
 		// viewport
-		insertRule('.'+classnameBase+' .'+classnameViewport+' {'
+		insertRule(selectorViewport+'{'
 			+'box-sizing: content-box;'
 			+'position: absolute;'
 			+'top: 0;'
@@ -161,42 +184,44 @@ window.scrolla = (function(window,document){
 			+'margin: 0;'
 			+'padding: 0 '+scrollBarSize+'px '+scrollBarSize+'px 0;'
 			+'overflow: scroll; }');
+		insertRule(selectorViewport+'::-webkit-scrollbar{'
+			+'display:none; }');
 		// viewport content
-		insertRule('.'+classnameBase+' .'+classnameViewport+' * {'
+		insertRule(selectorViewport+' * {'
 			+'box-sizing: border-box; }');
-		insertRule('.'+classnameBase+' .'+classnameViewport+'>*:last-child {'
+		insertRule(selectorViewport+'>*:last-child {'
 			+'margin-bottom: -'+scrollBarSize+'px; }');
-		insertRule('.'+classnameBase+' .'+classnameAllInline+'>* {'
+		insertRule(selectorAllInline+'>* {'
 			+'margin-bottom: -'+scrollBarSize+'px; }');
-		insertRule('.'+classnameBase+' .'+classnameAllInline+'>*:last-child {'
+		insertRule(selectorAllInline+'>*:last-child {'
 			+'margin-right: -'+scrollBarSize+'px; }');
 		//
 		// disable
-		insertRule('.'+classnameBase+'.'+classnameDisabled+' {'
+		insertRule(selectorBaseDisabled+'{'
 			+'height: auto!important; }');
 		// wrapper
-		insertRule('.'+classnameBase+'.'+classnameDisabled+' .'+classnameWrapper+' {'
+		insertRule(selectorWrapperDisabled+'{'
 			+'position: static;'
 			+'width: auto;'
 			+'height: auto;'
 			+'overflow: auto; }');
 		// viewport
-		insertRule('.'+classnameBase+'.'+classnameDisabled+' .'+classnameViewport+' {'
+		insertRule(selectorViewportDisabled+'{'
 			+'position: static;'
 			+'width: auto;'
 			+'height: auto;'
 			+'padding: 0;'
 			+'overflow: auto; }');
 		// ui
-		insertRule('.'+classnameBase+'.'+classnameDisabled+' .'+classnameGutter+','
-			+'.'+classnameBase+'.'+classnameDisabled+' .'+classnameButton+' {'
+		insertRule(selectorBaseDisabled+g+d+classnameGutter+','
+			+selectorBaseDisabled+g+d+classnameButton+' {'
 			+'display: none; }');
 		// viewport content
-		insertRule('.'+classnameBase+'.'+classnameDisabled+' .'+classnameViewport+'>*:last-child {'
+		insertRule(selectorViewportDisabled+'>*:last-child {'
 			+'margin-bottom: 0px; }');
-		insertRule('.'+classnameBase+'.'+classnameDisabled+' .'+classnameAllInline+'>* {'
+		insertRule(selectorAllInlineDisabled+'>* {'
 			+'margin-bottom: 0px; }');
-		insertRule('.'+classnameBase+'.'+classnameDisabled+' .'+classnameAllInline+'>*:last-child {'
+		insertRule(selectorAllInlineDisabled+'>*:last-child {'
 			+'margin-right: 0px; }');
 	}
 
@@ -239,7 +264,6 @@ window.scrolla = (function(window,document){
 	 * @param {HTMLElement} [options.top=HTMLDivElement]
 	 * @param {HTMLElement} [options.bottom=HTMLDivElement]
 	 * @returns scrollaInstance
-	 * @todo add stepsize: a percentage to step by
 	 */
 	function scrolla(element,options){
 		options = extend(options||{},defaultOptions);
@@ -411,8 +435,8 @@ window.scrolla = (function(window,document){
 			dir.gutterClassList.add(classnameGutter);
 			dir.gutterClassList.add(isHorizontal?classnameHorizontal:classnameVertical);
 			//
-			insertRule('.'+inst.class+' .gutter.'+(isHorizontal?classnameHorizontal:classnameVertical)+' {'
-				+sizePrpd+': '+inst.gutterSize+stringPx+';');
+			insertRule('.'+inst.class+'>.gutter.'+(isHorizontal?classnameHorizontal:classnameVertical)+'{'
+				+sizePrpd+': '+inst.gutterSize+stringPx+';}');
 			//
 			dir.bar.classList.add(classnameBar);
 			dir.gutter.addEventListener(eventClick,handleGutterClick.bind(dir.gutter,inst,isHorizontal));
@@ -640,7 +664,7 @@ window.scrolla = (function(window,document){
 		var dir = getDirection(inst,horizontal)
 			,scrollDir = getScroll(horizontal)
 			,scrollFrom = parseFloat(inst.viewport[scrollDir])
-			,scrollTo = scrollFrom + (forward?1:-1)*dir.viewportSize
+			,scrollTo = scrollFrom + (forward?1:-1)*stepSize*dir.viewportSize
 		;
 		inst.viewport[scrollDir] = scrollTo;
 		setBarPos(inst,horizontal);
@@ -676,7 +700,13 @@ window.scrolla = (function(window,document){
 			,inner = createDiv()
 			,widthNoScroll
 			,widthWithScroll
+			,classNameTestSize = 'test'+Date.now()
+			,selectorTestSize = '.'+classNameTestSize
+			,sheet = getStyleSheet()
 		;
+		insertRule(selectorTestSize+'::-webkit-scrollbar{'
+			+'display:none; }');
+		outer.classList.add(classNameTestSize);
 		outer.style.visibility = 'hidden';
 		outer.style.width = '100px';
 		outer.style.msOverflowStyle = 'scrollbar';
@@ -689,6 +719,7 @@ window.scrolla = (function(window,document){
 		widthWithScroll = inner.offsetWidth;
 		//
 		body.removeChild(outer);
+		sheet.deleteRule(0);
 		//
 		return widthNoScroll - widthWithScroll;
 	}
