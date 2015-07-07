@@ -1,6 +1,6 @@
 /**
  * Scrolla is a pure-js, cross-everything scrollbar script.
- * @version 0.0.11
+ * @version 0.0.12
  * @license MIT/GPL
  * @author Ron Valstar <ron@ronvalstar.nl>
  * @copyright Ron Valstar <ron@ronvalstar.nl>
@@ -40,7 +40,7 @@ window.scrolla = (function(window,document){
 		,baseStyleSheet
 		//
 		,scrollBarSize = getBrowserScrollbarSize()
-		,stepSize = 0.95// todo: make setable
+		,stepSize = 0.95
 		//
 		,dimensionDefaultStyles = {
 			width:'auto'
@@ -67,7 +67,7 @@ window.scrolla = (function(window,document){
 		,isInitialised = false
 		//
 		,defaultOptions = {
-			// todo
+			// todo: set or loose
 		}
 		//
 		,instancesNr = 0
@@ -81,15 +81,23 @@ window.scrolla = (function(window,document){
 	 * @memberof scrolla
 	 * @public
 	 * @param {Object} [options]
-	 * @param {String} [options.classnameWrapper='wrapper']
-	 * @param {String} [options.classnameViewport='viewport']
-	 * @param {String} [options.classnameGutter='gutter']
-	 * @param {String} [options.classnameBar='bar']
-	 * @param {String} [options.classnameHorizontal='horizontal']
-	 * @param {String} [options.classnameVertical='vertical']
+	 * @param {String} [options.stepSize=0.95] The amount of the step size, a number from 0 to 1 proportionate to the viewport size.
+	 * @param {String} [options.classnameWrapper='wrapper'] ClassName for the wrapper.
+	 * @param {String} [options.classnameViewport='viewport'] ClassName for the viewport.
+	 * @param {String} [options.classnameGutter='gutter'] ClassName for the gutters.
+	 * @param {String} [options.classnameBar='bar'] ClassName for the bars.
+	 * @param {String} [options.classnameButton='button'] ClassName for the buttons.
+	 * @param {String} [options.classnameHorizontal='horizontal'] ClassName for horizontal.
+	 * @param {String} [options.classnameVertical='vertical'] ClassName for vertical.
+	 * @param {String} [options.classnameForward='forward'] ClassName for forward.
+	 * @param {String} [options.classnameBackward='backward'] ClassName for backward.
+	 * @param {String} [options.classnameInactive='inactive'] ClassName for inactive ui elements.
+	 * @param {String} [options.classnameDisabled='disabled'] ClassName for a disabled scrolla instance.
+	 * @param {String} [options.classnameAllInline='all-inline'] ClassName for the viewport when all direct children are inline.
 	 */
 	function init(options){
 		if (!isInitialised) {
+			options.stepSize&&(stepSize = options.stepSize);
 			initClassListToggleFix();
 			initCSS(options);
 			initEvents();
@@ -106,9 +114,9 @@ window.scrolla = (function(window,document){
 	 */
 	function initClassListToggleFix(){
 		/*global DOMTokenList*/
-		var testElement = document.createElement("_");
-		testElement.classList.toggle("c3", false);
-		if (testElement.classList.contains("c3")) {
+		var testElement = document.createElement('_');
+		testElement.classList.toggle(classnameBase, false);
+		if (testElement.classList.contains(classnameBase)) {
 			var _toggle = DOMTokenList.prototype.toggle;
 			DOMTokenList.prototype.toggle = function(token, force) {
 				/*jshint -W018 */
@@ -613,10 +621,8 @@ window.scrolla = (function(window,document){
 		// recalculate sizes
 		inst.viewportW = inst.base.offsetWidth;
 		inst.viewportH = inst.base.offsetHeight;
-		//inst.viewportW = inst.viewport.offsetWidth;
-		//inst.viewportH = inst.viewport.offsetHeight;
-		inst.viewportScrollW = inst.viewport.scrollWidth;// + (inst.allInline?-scrollBarSize:0); // todo: changes after initWrapper for inline content
-		inst.viewportScrollH = inst.viewport.scrollHeight;// + (inst.allInline?-scrollBarSize:0);
+		inst.viewportScrollW = inst.viewport.scrollWidth;
+		inst.viewportScrollH = inst.viewport.scrollHeight;
 		inst.barHorSize = getBarSize(inst,true);
 		inst.barVerSize = getBarSize(inst,false);
 		// check inactive elements
