@@ -11,7 +11,9 @@ window.scrolla = (function(window,document){
 
 	var /*baseHash = btoa(Date.now()%1E6)
 		,forEach = Array.prototype.forEach
-		,*/classnameBase = 'scrolla'
+		,*/
+		// classNames
+		classnameBase = 'scrolla'
 		,classnameWrapper = 'wrapper'
 		,classnameViewport = 'viewport'
 		,classnameGutter = 'gutter'
@@ -24,6 +26,26 @@ window.scrolla = (function(window,document){
 		,classnameInactive = 'inactive'
 		,classnameDisabled = 'disabled'
 		,classnameAllInline = 'all-inline'
+		// selectors
+		,d = '.'
+		,g = '>'
+		,selectorBase
+		,selectorWrapper
+		,selectorViewport
+		,selectorAllInline
+		,selectorBaseDisabled
+		,selectorWrapperDisabled
+		,selectorViewportDisabled
+		,selectorAllInlineDisabled
+		,selectorGutter
+		,selectorGutterH
+		,selectorGutterV
+		,selectorBar
+		,selectorBarH
+		,selectorBarV
+		,selectorButton
+		,selectorInactive
+		//
 		,stringPx = 'px'
 		,eventClick = 'click'
 		,eventMousedown = 'mousedown'
@@ -97,7 +119,7 @@ window.scrolla = (function(window,document){
 	 */
 	function init(options){
 		if (!isInitialised) {
-			options.stepSize&&(stepSize = options.stepSize);
+			options&&options.stepSize&&(stepSize = options.stepSize);
 			initClassListToggleFix();
 			initCSS(options);
 			initEvents();
@@ -147,27 +169,25 @@ window.scrolla = (function(window,document){
 			options.classnameVertical&&(classnameVertical=options.classnameVertical);
 		}
 		// selectors
-		var d = '.'
-			,g = '>'
-			,selectorBase = d+classnameBase
-			,selectorWrapper = selectorBase+g+d+classnameWrapper
-			,selectorViewport = selectorWrapper+g+d+classnameViewport
-			,selectorAllInline = selectorWrapper+g+d+classnameAllInline
-			//
-			,selectorBaseDisabled = d+classnameBase+d+classnameDisabled
-			,selectorWrapperDisabled = selectorBaseDisabled+g+d+classnameWrapper
-			,selectorViewportDisabled = selectorWrapperDisabled+g+d+classnameViewport
-			,selectorAllInlineDisabled = selectorWrapperDisabled+g+d+classnameAllInline
-			//
-			,selectorGutter = selectorBase+g+d+classnameGutter
-			,selectorGutterH = selectorGutter+d+classnameHorizontal
-			,selectorGutterV = selectorGutter+d+classnameVertical
-			,selectorBar = selectorGutter+g+d+classnameBar
-			,selectorBarH = selectorGutterH+g+d+classnameBar
-			,selectorBarV = selectorGutterV+g+d+classnameBar
-			,selectorButton = selectorBase+g+d+classnameButton
-			,selectorInactive = selectorBase+g+d+classnameInactive
-		;
+		selectorBase = d+classnameBase;
+		selectorWrapper = selectorBase+g+d+classnameWrapper;
+		selectorViewport = selectorWrapper+g+d+classnameViewport;
+		selectorAllInline = selectorWrapper+g+d+classnameAllInline;
+		//
+		selectorBaseDisabled = d+classnameBase+d+classnameDisabled;
+		selectorWrapperDisabled = selectorBaseDisabled+g+d+classnameWrapper;
+		selectorViewportDisabled = selectorWrapperDisabled+g+d+classnameViewport;
+		selectorAllInlineDisabled = selectorWrapperDisabled+g+d+classnameAllInline;
+		//
+		selectorGutter = selectorBase+g+d+classnameGutter;
+		selectorGutterH = selectorGutter+d+classnameHorizontal;
+		selectorGutterV = selectorGutter+d+classnameVertical;
+		selectorBar = selectorGutter+g+d+classnameBar;
+		selectorBarH = selectorGutterH+g+d+classnameBar;
+		selectorBarV = selectorGutterV+g+d+classnameBar;
+		selectorButton = selectorBase+g+d+classnameButton;
+		selectorInactive = selectorBase+g+d+classnameInactive;
+		//
 		// gutter
 		insertRule(selectorGutter+'{'
 			+'position: absolute;'
@@ -215,10 +235,8 @@ window.scrolla = (function(window,document){
 			+'width: 100%;'
 			+'height: 100%;'
 			+'margin: 0;'
-			+'padding: 0 '+scrollBarSize+'px '+scrollBarSize+'px 0;'
-			+'overflow: scroll; }');
-		insertRule(selectorViewport+'::-webkit-scrollbar{'
-			+'display:none; }');
+			+'padding: 0 '+scrollBarSize+'px '+scrollBarSize+'px 0;}');
+			//+'overflow: scroll; }');
 		// viewport content
 		insertRule(selectorViewport+' * {'
 			+'box-sizing: border-box; }');
@@ -230,32 +248,32 @@ window.scrolla = (function(window,document){
 			+'margin-right: -'+scrollBarSize+'px; }');
 		//
 		// disable
-		insertRule(selectorBaseDisabled+'{'
-			+'height: auto!important; }');
+		//insertRule(selectorBaseDisabled+'{'
+		//	+'height: auto!important; }');
 		// wrapper
 		insertRule(selectorWrapperDisabled+'{'
 			+'position: static;'
-			+'width: auto;'
-			+'height: auto;'
+			//+'width: auto;'
+			//+'height: auto;'
 			+'overflow: auto; }');
 		// viewport
 		insertRule(selectorViewportDisabled+'{'
 			+'position: static;'
-			+'width: auto;'
-			+'height: auto;'
-			+'padding: 0;'
-			+'overflow: auto; }');
+			//+'width: auto;'
+			//+'height: auto;'
+			+'padding: 0;}');
+			//+'overflow: auto; }');
 		// ui
 		insertRule(selectorBaseDisabled+g+d+classnameGutter+','
 			+selectorBaseDisabled+g+d+classnameButton+' {'
 			+'display: none; }');
 		// viewport content
 		insertRule(selectorViewportDisabled+'>*:last-child {'
-			+'margin-bottom: 0px; }');
+			+'margin-bottom: 0; }');
 		insertRule(selectorAllInlineDisabled+'>* {'
-			+'margin-bottom: 0px; }');
+			+'margin-bottom: 0; }');
 		insertRule(selectorAllInlineDisabled+'>*:last-child {'
-			+'margin-right: 0px; }');
+			+'margin-right: 0; }');
 	}
 
 	/**
@@ -397,6 +415,9 @@ window.scrolla = (function(window,document){
 		//
 		// set base element dimensions
 		var defaultStyles = getDefaultStyles(element,dimensionStyles)
+			,defaultView = document.defaultView.getComputedStyle(element, null)
+			,viewportOverflowX = defaultView.getPropertyValue('overflow-x')
+			,viewportOverflowY = defaultView.getPropertyValue('overflow-y')
 			,baseStyle = inst.base.style;
 		for (var cssProperty in defaultStyles) {
 			var styleValue = defaultStyles[cssProperty];
@@ -405,10 +426,29 @@ window.scrolla = (function(window,document){
 		// if no height is set revert to offetHeight
 		if (baseStyle.height===''&&baseStyle.minHeight===''){
 			baseStyle.height = inst.viewportH+stringPx;
+			console.log('inst.viewportH',inst.viewportH); // log
+			console.log('inst.viewportH',inst.viewport.offsetHeight); // log
+			setTimeout(function(){
+				console.log('inst.viewportH',inst.viewportH); // log
+				console.log('inst.viewportH',inst.viewport.offsetHeight); // log
+			},40);
 		}
 		//
-		//inst.viewport
-		console.log('initWrapper::scroll',document.defaultView.getComputedStyle(inst.viewport, null).getPropertyValue('scroll')); // log
+		// check viewport overflow values
+		if (viewportOverflowX==='auto') element.style.overflowX = 'scroll';
+		if (viewportOverflowY==='auto') element.style.overflowY = 'scroll';
+		if (viewportOverflowX==='hidden') { // todo: check
+			insertRule(d+inst.class+selectorViewport+'{'
+				+'padding-bottom: 0; }');
+			insertRule(d+inst.class+selectorViewport+'>*:last-child {'
+				+'margin-bottom: 0; }');
+			insertRule(d+inst.class+selectorAllInline+'>* {'
+				+'margin-bottom: 0; }');
+		}
+		if (viewportOverflowY==='hidden') {
+			baseStyle.height = (inst.viewportH-scrollBarSize)+stringPx;
+		}
+		console.log('initWrapper::scroll',defaultView.getPropertyValue('overflow-x'),defaultView.getPropertyValue('overflow-y')); // log
 		//
 		//
 		// structure
@@ -736,10 +776,7 @@ window.scrolla = (function(window,document){
 			,widthNoScroll
 			,widthWithScroll
 			,classNameTestSize = 'test'+Date.now()
-			,selectorTestSize = '.'+classNameTestSize
-			,sheet = getStyleSheet()
 		;
-		insertRule(selectorTestSize+'::-webkit-scrollbar{display:none; }');
 		outer.classList.add(classNameTestSize);
 		outer.style.visibility = 'hidden';
 		outer.style.width = '100px';
@@ -753,7 +790,6 @@ window.scrolla = (function(window,document){
 		widthWithScroll = inner.offsetWidth;
 		//
 		body.removeChild(outer);
-		sheet.length&&sheet.deleteRule(0);
 		//
 		return widthNoScroll - widthWithScroll;
 	}

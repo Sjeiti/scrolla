@@ -104,7 +104,8 @@
 				.target-css {
 					width: 100%;
 					height: 200px;
-					overflow: scroll;
+					overflow: hidden;
+					overflow-y: scroll;
 					background-color: #DDD;
 				}
 				.target-css div {
@@ -144,7 +145,8 @@
 					left: 25px;
 					width: 70%;
 					height: 200px;
-					overflow: scroll;
+					overflow: hidden;
+					overflow-x: scroll;
 					background-color: #EEE;
 				}
 				.target-anim div {
@@ -188,10 +190,13 @@
 			<style>
 				.target-list {
 					width: 500px;
+					max-width: 500px;
 					padding-left: 0;
 					list-style: none;
 					white-space: nowrap;
 					background-color: gray;
+					overflow: hidden;
+					overflow-x: scroll;
 				}
 				.target-list li {
 					display: inline-block;
@@ -203,7 +208,7 @@
 					text-align: center;
 					color: white;
 				}
-				.instance-list .bar {
+				.instance-list>.gutter>.bar {
 					background-color: red;
 				}
 			</style>
