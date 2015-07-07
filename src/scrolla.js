@@ -174,7 +174,7 @@ window.scrolla = (function(window,document){
 		selectorViewport = selectorWrapper+g+d+classnameViewport;
 		selectorAllInline = selectorWrapper+g+d+classnameAllInline;
 		//
-		selectorBaseDisabled = d+classnameBase+d+classnameDisabled;
+		selectorBaseDisabled = d+classnameDisabled;
 		selectorWrapperDisabled = selectorBaseDisabled+g+d+classnameWrapper;
 		selectorViewportDisabled = selectorWrapperDisabled+g+d+classnameViewport;
 		selectorAllInlineDisabled = selectorWrapperDisabled+g+d+classnameAllInline;
@@ -236,6 +236,8 @@ window.scrolla = (function(window,document){
 			+'height: 100%;'
 			+'margin: 0;'
 			+'padding: 0 '+scrollBarSize+'px '+scrollBarSize+'px 0;}');
+		if (scrollBarSize===0) insertRule(selectorViewport+'::-webkit-scrollbar{'
+			+'display:none; }');
 		// viewport content
 		insertRule(selectorViewport+' * {'
 			+'box-sizing: border-box; }');
@@ -296,6 +298,8 @@ window.scrolla = (function(window,document){
 	 * @param {Object} [options]
 	 * @param {string} [options.id='scrolla#'] An optional instance ID.
 	 * @param {string} [options.class='scrolla#'] An optional instance className.
+	 * @param {Number} [options.width] Set the viewport to a fixed width.
+	 * @param {Number} [options.height] Set the viewport to a fixed height.
 	 * @param {Number} [options.gutterSize=8] The size of the gutter in pixels. You can also just set this with CSS.
 	 * @param {animatedStepCallback} [options.animatedStepCallback] A callback method when stepping to apply animations with (see [animatedStepCallback]{@link animatedStepCallback}).
 	 * @param {HTMLElement} [options.gutterHor=HTMLDivElement] An optional HTMLElement for the horizontal gutter.
@@ -328,10 +332,12 @@ window.scrolla = (function(window,document){
 				,wrapper: createDiv()
 				//
 				,viewport: element
-				,viewportW: element.offsetWidth
-				,viewportH: element.offsetHeight
+				,viewportW: options.width||element.offsetWidth
+				,viewportH: options.height||element.offsetHeight
 				,viewportScrollW: element.scrollWidth
 				,viewportScrollH: element.scrollHeight
+				//
+				,disabled: false
 				//
 				,gutterSize: options.gutterSize||8
 				// horizontal gutter
@@ -417,7 +423,9 @@ window.scrolla = (function(window,document){
 		}
 		// if no height is set revert to offetHeight
 		if (baseStyle.height===''&&baseStyle.minHeight===''){
-			baseStyle.height = inst.viewportH+stringPx;
+			//baseStyle.height = inst.viewportH+stringPx;
+			inst.baseRule = insertRule('#'+inst.id+selectorViewport+'{'
+				+'height:'+inst.viewportH+stringPx+';}');
 		}
 		//
 		// check viewport overflow values
@@ -645,31 +653,33 @@ window.scrolla = (function(window,document){
 	 * @param {scrollaPrivateInstance} inst
 	 */
 	function resize(inst){
-		// recalculate sizes
-		inst.viewportW = inst.base.offsetWidth;
-		inst.viewportH = inst.base.offsetHeight;
-		inst.viewportScrollW = inst.viewport.scrollWidth;
-		inst.viewportScrollH = inst.viewport.scrollHeight;
-		inst.barHorSize = getBarSize(inst,true);
-		inst.barVerSize = getBarSize(inst,false);
-		// check inactive elements
-		var isHorInActive = inst.hidden==='x'?true:inst.viewportScrollW<=inst.viewportW
-			,isVerInActive = inst.hidden==='y'?true:inst.viewportScrollH<=inst.viewportH;
-		inst.gutterHor.classList.toggle(classnameInactive,isHorInActive);
-		inst.gutterVer.classList.toggle(classnameInactive,isVerInActive);
-		inst.left.classList.toggle(classnameInactive,isHorInActive);
-		inst.right.classList.toggle(classnameInactive,isHorInActive);
-		inst.top.classList.toggle(classnameInactive,isVerInActive);
-		inst.bottom.classList.toggle(classnameInactive,isVerInActive);
-		// set positions
-		setBarPos(inst,true);
-		setBarPos(inst,false);
-		[inst.hor,inst.ver].forEach(function(o){
-			var isHorizontal = o.gutter===inst.gutterHor
-				,sizePrll = getParallel(isHorizontal)
-			;
-			o.barStyle[sizePrll] = o.barSize + stringPx;
-		});
+		if (!inst.disabled) {
+			// recalculate sizes
+			inst.viewportW = inst.base.offsetWidth;
+			inst.viewportH = inst.base.offsetHeight;
+			inst.viewportScrollW = inst.viewport.scrollWidth;
+			inst.viewportScrollH = inst.viewport.scrollHeight;
+			inst.barHorSize = getBarSize(inst,true);
+			inst.barVerSize = getBarSize(inst,false);
+			// check inactive elements
+			var isHorInActive = inst.hidden==='x'?true:inst.viewportScrollW<=inst.viewportW
+				,isVerInActive = inst.hidden==='y'?true:inst.viewportScrollH<=inst.viewportH;
+			inst.gutterHor.classList.toggle(classnameInactive,isHorInActive);
+			inst.gutterVer.classList.toggle(classnameInactive,isVerInActive);
+			inst.left.classList.toggle(classnameInactive,isHorInActive);
+			inst.right.classList.toggle(classnameInactive,isHorInActive);
+			inst.top.classList.toggle(classnameInactive,isVerInActive);
+			inst.bottom.classList.toggle(classnameInactive,isVerInActive);
+			// set positions
+			setBarPos(inst,true);
+			setBarPos(inst,false);
+			[inst.hor,inst.ver].forEach(function(o){
+				var isHorizontal = o.gutter===inst.gutterHor
+					,sizePrll = getParallel(isHorizontal)
+				;
+				o.barStyle[sizePrll] = o.barSize + stringPx;
+			});
+		}
 	}
 
 	/**
@@ -745,10 +755,17 @@ window.scrolla = (function(window,document){
 	 * @private
 	 * @param {scrollaPrivateInstance} inst
 	 * @param {boolean} enable
+	 * @returns {boolean} Returns true if dis- or enabling has succeeded.
 	 */
 	function disenable(inst,enable){
-		inst.base.classList.toggle(classnameDisabled,!enable);
-		inst.base.style.height = (inst.viewportH+(enable?0:scrollBarSize))+stringPx;
+		var canDisenable = enable===inst.disabled;
+		if (canDisenable) {
+			inst.base.classList.toggle(classnameDisabled,!enable);
+			inst.base.classList.toggle(classnameBase,enable);
+			inst.disabled = !enable;
+			enable&&inst.resize();
+		}
+		return canDisenable;
 	}
 
 	/**
@@ -918,6 +935,7 @@ window.scrolla = (function(window,document){
  * @property {Number} viewportH
  * @property {Number} viewportScrollW
  * @property {Number} viewportScrollH
+ * @property {boolean} disabled
  * @property {Number} gutterSize
  * @property {HTMLElement} gutterHor
  * @property {DOMTokenList} gutterHorClassList
