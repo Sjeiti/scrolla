@@ -36,6 +36,12 @@ The options object can have the following settings:
 **class** (string='scrolla#')
 <p>An optional instance className.</p>
 
+**width** (Number)
+<p>Set the viewport to a fixed width.</p>
+
+**height** (Number)
+<p>Set the viewport to a fixed height.</p>
+
 **gutterSize** (Number=8)
 <p>The size of the gutter in pixels. You can also just set this with CSS.</p>
 
