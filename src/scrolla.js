@@ -551,9 +551,8 @@ window.scrolla = (function(window,document){
 	 * @param {MouseEvent} e
 	 */
 	function handleGutterClick(inst,horizontal,e){
-		// todo: Firefox bug
 		var dir = getDirection(inst,horizontal)
-			,pos = horizontal?e.offsetX:e.offsetY
+			,pos = horizontal?e.layerX:e.layerY
 		;
 		stepViewport(inst,horizontal,pos>dir.barPos);
 	}
