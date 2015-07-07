@@ -90,12 +90,37 @@ window.scrolla = (function(window,document){
 	 */
 	function init(options){
 		if (!isInitialised) {
+			initClassListToggleFix();
 			initCSS(options);
 			initEvents();
 			isInitialised = true;
 			return true;
 		}
 		return false;
+	}
+
+	/**
+	 * Fix for classList.toggle second boolean argument.
+	 * @memberof scrolla
+	 * @private
+	 */
+	function initClassListToggleFix(){
+		/*global DOMTokenList*/
+		var testElement = document.createElement("_");
+		testElement.classList.toggle("c3", false);
+		if (testElement.classList.contains("c3")) {
+			var _toggle = DOMTokenList.prototype.toggle;
+			DOMTokenList.prototype.toggle = function(token, force) {
+				/*jshint -W018 */
+				if (1 in arguments && !this.contains(token) === !force) {
+					return force;
+				} else {
+					return _toggle.call(this, token);
+				}
+				/*jshint +W018 */
+			};
+		}
+		testElement = null;
 	}
 
 	/**
@@ -373,6 +398,10 @@ window.scrolla = (function(window,document){
 		if (baseStyle.height===''&&baseStyle.minHeight===''){
 			baseStyle.height = inst.viewportH+stringPx;
 		}
+		//
+		//inst.viewport
+		console.log('initWrapper::scroll',document.defaultView.getComputedStyle(inst.viewport, null).getPropertyValue('scroll')); // log
+		//
 		//
 		// structure
 		element.parentNode.insertBefore(inst.base,element);
@@ -704,8 +733,7 @@ window.scrolla = (function(window,document){
 			,selectorTestSize = '.'+classNameTestSize
 			,sheet = getStyleSheet()
 		;
-		insertRule(selectorTestSize+'::-webkit-scrollbar{'
-			+'display:none; }');
+		insertRule(selectorTestSize+'::-webkit-scrollbar{display:none; }');
 		outer.classList.add(classNameTestSize);
 		outer.style.visibility = 'hidden';
 		outer.style.width = '100px';
@@ -719,7 +747,7 @@ window.scrolla = (function(window,document){
 		widthWithScroll = inner.offsetWidth;
 		//
 		body.removeChild(outer);
-		sheet.deleteRule(0);
+		sheet.length&&sheet.deleteRule(0);
 		//
 		return widthNoScroll - widthWithScroll;
 	}
@@ -749,7 +777,7 @@ window.scrolla = (function(window,document){
 	 */
 	function insertRule(css){
 		var sheet = getStyleSheet();
-		sheet.insertRule(css,0);
+		try{sheet.insertRule(css,0);}catch(err){console.warn(err);}
 		return sheet.cssRules[0];
 	}
 
