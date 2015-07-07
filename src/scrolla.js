@@ -1,6 +1,6 @@
 /**
  * Scrolla is a pure-js, cross-everything scrollbar script.
- * @version 0.0.12
+ * @version 0.1.0
  * @license MIT/GPL
  * @author Ron Valstar <ron@ronvalstar.nl>
  * @copyright Ron Valstar <ron@ronvalstar.nl>
@@ -292,20 +292,20 @@ window.scrolla = (function(window,document){
 	 * Instantiate scrolla
 	 * @memberof scrolla
 	 * @public
-	 * @param {HTMLElement} element
+	 * @param {HTMLElement} element The HTMLElement to apply the custom scrollbars to.
 	 * @param {Object} [options]
-	 * @param {string} [options.id='scrolla#']
-	 * @param {string} [options.class='scrolla#']
-	 * @param {Number} [options.gutterSize=8]
-	 * @param {animatedStepCallback} [options.animatedStepCallback]
-	 * @param {HTMLElement} [options.gutterHor=HTMLDivElement]
-	 * @param {HTMLElement} [options.barHor=HTMLDivElement]
-	 * @param {HTMLElement} [options.gutterVer=HTMLDivElement]
-	 * @param {HTMLElement} [options.barVer=HTMLDivElement]
-	 * @param {HTMLElement} [options.left=HTMLDivElement]
-	 * @param {HTMLElement} [options.right=HTMLDivElement]
-	 * @param {HTMLElement} [options.top=HTMLDivElement]
-	 * @param {HTMLElement} [options.bottom=HTMLDivElement]
+	 * @param {string} [options.id='scrolla#'] An optional instance ID.
+	 * @param {string} [options.class='scrolla#'] An optional instance className.
+	 * @param {Number} [options.gutterSize=8] The size of the gutter in pixels. You can also just set this with CSS.
+	 * @param {animatedStepCallback} [options.animatedStepCallback] A callback method when stepping to apply animations with (see [animatedStepCallback]{@link animatedStepCallback}).
+	 * @param {HTMLElement} [options.gutterHor=HTMLDivElement] An optional HTMLElement for the horizontal gutter.
+	 * @param {HTMLElement} [options.barHor=HTMLDivElement] An optional HTMLElement for horizontal bar.
+	 * @param {HTMLElement} [options.gutterVer=HTMLDivElement] An optional HTMLElement for vertical gutter.
+	 * @param {HTMLElement} [options.barVer=HTMLDivElement] An optional HTMLElement for vertical bar
+	 * @param {HTMLElement} [options.left=HTMLDivElement] An optional HTMLElement for left button.
+	 * @param {HTMLElement} [options.right=HTMLDivElement] An optional HTMLElement for right button.
+	 * @param {HTMLElement} [options.top=HTMLDivElement] An optional HTMLElement for top button.
+	 * @param {HTMLElement} [options.bottom=HTMLDivElement] An optional HTMLElement for bottom button.
 	 * @returns scrollaInstance
 	 */
 	function scrolla(element,options){
@@ -424,6 +424,7 @@ window.scrolla = (function(window,document){
 		if (viewportOverflowX==='auto') element.style.overflowX = 'scroll';
 		if (viewportOverflowY==='auto') element.style.overflowY = 'scroll';
 		if (viewportOverflowX==='hidden') { // todo: check
+			inst.hidden = 'x';
 			insertRule(d+inst.class+selectorViewport+'{'
 				+'padding-bottom: 0; }');
 			insertRule(d+inst.class+selectorViewport+'>*:last-child {'
@@ -432,6 +433,7 @@ window.scrolla = (function(window,document){
 				+'margin-bottom: 0; }');
 		}
 		if (viewportOverflowY==='hidden') {
+			inst.hidden = 'y';
 			baseStyle.height = (inst.viewportH-scrollBarSize)+stringPx;
 			insertRule(d+inst.class+selectorViewport+'{'
 				+'padding-right: 0; }');
@@ -651,8 +653,8 @@ window.scrolla = (function(window,document){
 		inst.barHorSize = getBarSize(inst,true);
 		inst.barVerSize = getBarSize(inst,false);
 		// check inactive elements
-		var isHorInActive = inst.viewportScrollW<=inst.viewportW
-			,isVerInActive = inst.viewportScrollH<=inst.viewportH;
+		var isHorInActive = inst.hidden==='x'?true:inst.viewportScrollW<=inst.viewportW
+			,isVerInActive = inst.hidden==='y'?true:inst.viewportScrollH<=inst.viewportH;
 		inst.gutterHor.classList.toggle(classnameInactive,isHorInActive);
 		inst.gutterVer.classList.toggle(classnameInactive,isVerInActive);
 		inst.left.classList.toggle(classnameInactive,isHorInActive);
@@ -695,7 +697,6 @@ window.scrolla = (function(window,document){
 		if (horizontal) {
 			inst.barHorPos = inst.viewportScrollW===0?0:(inst.viewport.scrollLeft/inst.viewportScrollW)*inst.viewportW;
 			inst.barHorStyle.left = inst.barHorPos + stringPx;
-			//console.log('setBarPos',inst.viewportScrollW,inst.viewport.scrollWidth,inst.viewport.scrollLeft); // log
 		} else {
 			inst.barVerPos = inst.viewportScrollH===0?0:(inst.viewport.scrollTop/inst.viewportScrollH)*inst.viewportH;
 			inst.barVerStyle.top = inst.barVerPos + stringPx;
@@ -805,7 +806,7 @@ window.scrolla = (function(window,document){
 	 */
 	function insertRule(css){
 		var sheet = getStyleSheet();
-		try{sheet.insertRule(css,0);}catch(err){console.warn(err);}
+		try{sheet.insertRule(css,0);}catch(err){console.warn(err,css);}
 		return sheet.cssRules[0];
 	}
 
@@ -941,6 +942,7 @@ window.scrolla = (function(window,document){
  * @property {Function} animatedStepCallback
  * @property {scrollaDirection} hor
  * @property {scrollaDirection} ver
+ * @property {string} hidden The vieport overflow is hidden for: 'x' or 'y'
  */
 /**
  * The scrolla direction (horizontal or vertical)

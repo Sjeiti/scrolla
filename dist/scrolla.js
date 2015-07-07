@@ -1,6 +1,6 @@
 /**
  * Scrolla is a pure-js, cross-everything scrollbar script.
- * @version 0.0.10
+ * @version 0.1.0
  * @license MIT/GPL
  * @author Ron Valstar <ron@ronvalstar.nl>
  * @copyright Ron Valstar <ron@ronvalstar.nl>
@@ -11,7 +11,9 @@ window.scrolla = (function(window,document){
 
 	var /*baseHash = btoa(Date.now()%1E6)
 		,forEach = Array.prototype.forEach
-		,*/classnameBase = 'scrolla'
+		,*/
+		// classNames
+		classnameBase = 'scrolla'
 		,classnameWrapper = 'wrapper'
 		,classnameViewport = 'viewport'
 		,classnameGutter = 'gutter'
@@ -24,6 +26,26 @@ window.scrolla = (function(window,document){
 		,classnameInactive = 'inactive'
 		,classnameDisabled = 'disabled'
 		,classnameAllInline = 'all-inline'
+		// selectors
+		,d = '.'
+		,g = '>'
+		,selectorBase
+		,selectorWrapper
+		,selectorViewport
+		,selectorAllInline
+		,selectorBaseDisabled
+		,selectorWrapperDisabled
+		,selectorViewportDisabled
+		,selectorAllInlineDisabled
+		,selectorGutter
+		,selectorGutterH
+		,selectorGutterV
+		,selectorBar
+		,selectorBarH
+		,selectorBarV
+		,selectorButton
+		,selectorInactive
+		//
 		,stringPx = 'px'
 		,eventClick = 'click'
 		,eventMousedown = 'mousedown'
@@ -40,6 +62,7 @@ window.scrolla = (function(window,document){
 		,baseStyleSheet
 		//
 		,scrollBarSize = getBrowserScrollbarSize()
+		,stepSize = 0.95
 		//
 		,dimensionDefaultStyles = {
 			width:'auto'
@@ -66,7 +89,7 @@ window.scrolla = (function(window,document){
 		,isInitialised = false
 		//
 		,defaultOptions = {
-			// todo
+			// todo: set or loose
 		}
 		//
 		,instancesNr = 0
@@ -80,21 +103,54 @@ window.scrolla = (function(window,document){
 	 * @memberof scrolla
 	 * @public
 	 * @param {Object} [options]
-	 * @param {String} [options.classnameWrapper='wrapper']
-	 * @param {String} [options.classnameViewport='viewport']
-	 * @param {String} [options.classnameGutter='gutter']
-	 * @param {String} [options.classnameBar='bar']
-	 * @param {String} [options.classnameHorizontal='horizontal']
-	 * @param {String} [options.classnameVertical='vertical']
+	 * @param {String} [options.stepSize=0.95] The amount of the step size, a number from 0 to 1 proportionate to the viewport size.
+	 * @param {String} [options.classnameWrapper='wrapper'] ClassName for the wrapper.
+	 * @param {String} [options.classnameViewport='viewport'] ClassName for the viewport.
+	 * @param {String} [options.classnameGutter='gutter'] ClassName for the gutters.
+	 * @param {String} [options.classnameBar='bar'] ClassName for the bars.
+	 * @param {String} [options.classnameButton='button'] ClassName for the buttons.
+	 * @param {String} [options.classnameHorizontal='horizontal'] ClassName for horizontal.
+	 * @param {String} [options.classnameVertical='vertical'] ClassName for vertical.
+	 * @param {String} [options.classnameForward='forward'] ClassName for forward.
+	 * @param {String} [options.classnameBackward='backward'] ClassName for backward.
+	 * @param {String} [options.classnameInactive='inactive'] ClassName for inactive ui elements.
+	 * @param {String} [options.classnameDisabled='disabled'] ClassName for a disabled scrolla instance.
+	 * @param {String} [options.classnameAllInline='all-inline'] ClassName for the viewport when all direct children are inline.
 	 */
 	function init(options){
 		if (!isInitialised) {
+			options&&options.stepSize&&(stepSize = options.stepSize);
+			initClassListToggleFix();
 			initCSS(options);
 			initEvents();
 			isInitialised = true;
 			return true;
 		}
 		return false;
+	}
+
+	/**
+	 * Fix for classList.toggle second boolean argument.
+	 * @memberof scrolla
+	 * @private
+	 */
+	function initClassListToggleFix(){
+		/*global DOMTokenList*/
+		var testElement = document.createElement('_');
+		testElement.classList.toggle(classnameBase, false);
+		if (testElement.classList.contains(classnameBase)) {
+			var _toggle = DOMTokenList.prototype.toggle;
+			DOMTokenList.prototype.toggle = function(token, force) {
+				/*jshint -W018 */
+				if (1 in arguments && !this.contains(token) === !force) {
+					return force;
+				} else {
+					return _toggle.call(this, token);
+				}
+				/*jshint +W018 */
+			};
+		}
+		testElement = null;
 	}
 
 	/**
@@ -112,46 +168,66 @@ window.scrolla = (function(window,document){
 			options.classnameHorizontal&&(classnameHorizontal=options.classnameHorizontal);
 			options.classnameVertical&&(classnameVertical=options.classnameVertical);
 		}
+		// selectors
+		selectorBase = d+classnameBase;
+		selectorWrapper = selectorBase+g+d+classnameWrapper;
+		selectorViewport = selectorWrapper+g+d+classnameViewport;
+		selectorAllInline = selectorWrapper+g+d+classnameAllInline;
+		//
+		selectorBaseDisabled = d+classnameBase+d+classnameDisabled;
+		selectorWrapperDisabled = selectorBaseDisabled+g+d+classnameWrapper;
+		selectorViewportDisabled = selectorWrapperDisabled+g+d+classnameViewport;
+		selectorAllInlineDisabled = selectorWrapperDisabled+g+d+classnameAllInline;
+		//
+		selectorGutter = selectorBase+g+d+classnameGutter;
+		selectorGutterH = selectorGutter+d+classnameHorizontal;
+		selectorGutterV = selectorGutter+d+classnameVertical;
+		selectorBar = selectorGutter+g+d+classnameBar;
+		selectorBarH = selectorGutterH+g+d+classnameBar;
+		selectorBarV = selectorGutterV+g+d+classnameBar;
+		selectorButton = selectorBase+g+d+classnameButton;
+		selectorInactive = selectorBase+g+d+classnameInactive;
+		//
 		// gutter
-		insertRule('.'+classnameBase+' .'+classnameGutter+' {'
+		insertRule(selectorGutter+'{'
 			+'position: absolute;'
 			+'background-color: rgba(0,0,0,.2);'
 			+'z-index: 1;}');
-		insertRule('.'+classnameBase+' .'+classnameGutter+'.'+classnameHorizontal+' {'
+		insertRule(selectorGutterH+'{'
 			+'width: 100%;}');
-		insertRule('.'+classnameBase+' .'+classnameGutter+'.'+classnameVertical+' {'
+		insertRule(selectorGutterV+'{'
 			+'height: 100%;}');
 		// bar
-		insertRule('.'+classnameBase+' .'+classnameBar+' {'
+		insertRule(selectorBar+'{'
 			+'position: absolute;'
 			+'background-color: gray;'
 			+'cursor: pointer;}');
-		insertRule('.'+classnameBase+' .'+classnameHorizontal+' .'+classnameBar+' {'
+		insertRule(selectorBarH+'{'
 			+'height: 100%;'
 			+'min-width: 1px;}');
-		insertRule('.'+classnameBase+' .'+classnameVertical+' .'+classnameBar+' {'
+		insertRule(selectorBarV+'{'
 			+'width: 100%;'
 			+'min-height: 1px;}');
 		// button
-		insertRule('.'+classnameBase+' .'+classnameButton+' {'
+		insertRule(selectorButton+'{'
 			+'cursor: pointer;}');
 		// inactive
-		insertRule('.'+classnameBase+' .'+classnameInactive+' {'
+		insertRule(selectorInactive+'{'
 			+'display: none;}');
 		//
 		//
 		// base
-		insertRule('.'+classnameBase+' {'
+		insertRule(selectorBase+'{'
 			+'position: relative;'
 			+'overflow: visible!important; }');
 		// wrapper
-		insertRule('.'+classnameBase+' .'+classnameWrapper+' {'
+		insertRule(selectorWrapper+'{'
 			+'position: relative;'
 			+'width: 100%;'
 			+'height: 100%;'
 			+'overflow: hidden; }');
 		// viewport
-		insertRule('.'+classnameBase+' .'+classnameViewport+' {'
+		insertRule(selectorViewport+'{'
 			+'box-sizing: content-box;'
 			+'position: absolute;'
 			+'top: 0;'
@@ -159,45 +235,37 @@ window.scrolla = (function(window,document){
 			+'width: 100%;'
 			+'height: 100%;'
 			+'margin: 0;'
-			+'padding: 0 '+scrollBarSize+'px '+scrollBarSize+'px 0;'
-			+'overflow: scroll; }');
+			+'padding: 0 '+scrollBarSize+'px '+scrollBarSize+'px 0;}');
 		// viewport content
-		insertRule('.'+classnameBase+' .'+classnameViewport+' * {'
+		insertRule(selectorViewport+' * {'
 			+'box-sizing: border-box; }');
-		insertRule('.'+classnameBase+' .'+classnameViewport+'>*:last-child {'
+		insertRule(selectorViewport+'>*:last-child {'
 			+'margin-bottom: -'+scrollBarSize+'px; }');
-		insertRule('.'+classnameBase+' .'+classnameAllInline+'>* {'
+		insertRule(selectorAllInline+'>* {'
 			+'margin-bottom: -'+scrollBarSize+'px; }');
-		insertRule('.'+classnameBase+' .'+classnameAllInline+'>*:last-child {'
+		insertRule(selectorAllInline+'>*:last-child {'
 			+'margin-right: -'+scrollBarSize+'px; }');
 		//
 		// disable
-		insertRule('.'+classnameBase+'.'+classnameDisabled+' {'
-			+'height: auto!important; }');
 		// wrapper
-		insertRule('.'+classnameBase+'.'+classnameDisabled+' .'+classnameWrapper+' {'
+		insertRule(selectorWrapperDisabled+'{'
 			+'position: static;'
-			+'width: auto;'
-			+'height: auto;'
 			+'overflow: auto; }');
 		// viewport
-		insertRule('.'+classnameBase+'.'+classnameDisabled+' .'+classnameViewport+' {'
+		insertRule(selectorViewportDisabled+'{'
 			+'position: static;'
-			+'width: auto;'
-			+'height: auto;'
-			+'padding: 0;'
-			+'overflow: auto; }');
+			+'padding: 0;}');
 		// ui
-		insertRule('.'+classnameBase+'.'+classnameDisabled+' .'+classnameGutter+','
-			+'.'+classnameBase+'.'+classnameDisabled+' .'+classnameButton+' {'
+		insertRule(selectorBaseDisabled+g+d+classnameGutter+','
+			+selectorBaseDisabled+g+d+classnameButton+' {'
 			+'display: none; }');
 		// viewport content
-		insertRule('.'+classnameBase+'.'+classnameDisabled+' .'+classnameViewport+'>*:last-child {'
-			+'margin-bottom: 0px; }');
-		insertRule('.'+classnameBase+'.'+classnameDisabled+' .'+classnameAllInline+'>* {'
-			+'margin-bottom: 0px; }');
-		insertRule('.'+classnameBase+'.'+classnameDisabled+' .'+classnameAllInline+'>*:last-child {'
-			+'margin-right: 0px; }');
+		insertRule(selectorViewportDisabled+'>*:last-child {'
+			+'margin-bottom: 0; }');
+		insertRule(selectorAllInlineDisabled+'>* {'
+			+'margin-bottom: 0; }');
+		insertRule(selectorAllInlineDisabled+'>*:last-child {'
+			+'margin-right: 0; }');
 	}
 
 	/**
@@ -224,20 +292,20 @@ window.scrolla = (function(window,document){
 	 * Instantiate scrolla
 	 * @memberof scrolla
 	 * @public
-	 * @param {HTMLElement} element
+	 * @param {HTMLElement} element The HTMLElement to apply the custom scrollbars to.
 	 * @param {Object} [options]
-	 * @param {string} [options.id='scrolla#']
-	 * @param {string} [options.class='scrolla#']
-	 * @param {Number} [options.gutterSize=8]
-	 * @param {animatedStepCallback} [options.animatedStepCallback]
-	 * @param {HTMLElement} [options.gutterHor=HTMLDivElement]
-	 * @param {HTMLElement} [options.barHor=HTMLDivElement]
-	 * @param {HTMLElement} [options.gutterVer=HTMLDivElement]
-	 * @param {HTMLElement} [options.barVer=HTMLDivElement]
-	 * @param {HTMLElement} [options.left=HTMLDivElement]
-	 * @param {HTMLElement} [options.right=HTMLDivElement]
-	 * @param {HTMLElement} [options.top=HTMLDivElement]
-	 * @param {HTMLElement} [options.bottom=HTMLDivElement]
+	 * @param {string} [options.id='scrolla#'] An optional instance ID.
+	 * @param {string} [options.class='scrolla#'] An optional instance className.
+	 * @param {Number} [options.gutterSize=8] The size of the gutter in pixels. You can also just set this with CSS.
+	 * @param {animatedStepCallback} [options.animatedStepCallback] A callback method when stepping to apply animations with (see [animatedStepCallback]{@link animatedStepCallback}).
+	 * @param {HTMLElement} [options.gutterHor=HTMLDivElement] An optional HTMLElement for the horizontal gutter.
+	 * @param {HTMLElement} [options.barHor=HTMLDivElement] An optional HTMLElement for horizontal bar.
+	 * @param {HTMLElement} [options.gutterVer=HTMLDivElement] An optional HTMLElement for vertical gutter.
+	 * @param {HTMLElement} [options.barVer=HTMLDivElement] An optional HTMLElement for vertical bar
+	 * @param {HTMLElement} [options.left=HTMLDivElement] An optional HTMLElement for left button.
+	 * @param {HTMLElement} [options.right=HTMLDivElement] An optional HTMLElement for right button.
+	 * @param {HTMLElement} [options.top=HTMLDivElement] An optional HTMLElement for top button.
+	 * @param {HTMLElement} [options.bottom=HTMLDivElement] An optional HTMLElement for bottom button.
 	 * @returns scrollaInstance
 	 */
 	function scrolla(element,options){
@@ -339,6 +407,9 @@ window.scrolla = (function(window,document){
 		//
 		// set base element dimensions
 		var defaultStyles = getDefaultStyles(element,dimensionStyles)
+			,defaultView = document.defaultView.getComputedStyle(element, null)
+			,viewportOverflowX = defaultView.getPropertyValue('overflow-x')
+			,viewportOverflowY = defaultView.getPropertyValue('overflow-y')
 			,baseStyle = inst.base.style;
 		for (var cssProperty in defaultStyles) {
 			var styleValue = defaultStyles[cssProperty];
@@ -347,6 +418,25 @@ window.scrolla = (function(window,document){
 		// if no height is set revert to offetHeight
 		if (baseStyle.height===''&&baseStyle.minHeight===''){
 			baseStyle.height = inst.viewportH+stringPx;
+		}
+		//
+		// check viewport overflow values
+		if (viewportOverflowX==='auto') element.style.overflowX = 'scroll';
+		if (viewportOverflowY==='auto') element.style.overflowY = 'scroll';
+		if (viewportOverflowX==='hidden') { // todo: check
+			inst.hidden = 'x';
+			insertRule(d+inst.class+selectorViewport+'{'
+				+'padding-bottom: 0; }');
+			insertRule(d+inst.class+selectorViewport+'>*:last-child {'
+				+'margin-bottom: 0; }');
+			insertRule(d+inst.class+selectorAllInline+'>* {'
+				+'margin-bottom: 0; }');
+		}
+		if (viewportOverflowY==='hidden') {
+			inst.hidden = 'y';
+			baseStyle.height = (inst.viewportH-scrollBarSize)+stringPx;
+			insertRule(d+inst.class+selectorViewport+'{'
+				+'padding-right: 0; }');
 		}
 		//
 		// structure
@@ -410,8 +500,8 @@ window.scrolla = (function(window,document){
 			dir.gutterClassList.add(classnameGutter);
 			dir.gutterClassList.add(isHorizontal?classnameHorizontal:classnameVertical);
 			//
-			insertRule('.'+inst.class+' .gutter.'+(isHorizontal?classnameHorizontal:classnameVertical)+' {'
-				+sizePrpd+': '+inst.gutterSize+stringPx+';');
+			insertRule('.'+inst.class+'>.gutter.'+(isHorizontal?classnameHorizontal:classnameVertical)+'{'
+				+sizePrpd+': '+inst.gutterSize+stringPx+';}');
 			//
 			dir.bar.classList.add(classnameBar);
 			dir.gutter.addEventListener(eventClick,handleGutterClick.bind(dir.gutter,inst,isHorizontal));
@@ -463,9 +553,8 @@ window.scrolla = (function(window,document){
 	 * @param {MouseEvent} e
 	 */
 	function handleGutterClick(inst,horizontal,e){
-		// todo: Firefox bug
 		var dir = getDirection(inst,horizontal)
-			,pos = horizontal?e.offsetX:e.offsetY
+			,pos = horizontal?e.layerX:e.layerY
 		;
 		stepViewport(inst,horizontal,pos>dir.barPos);
 	}
@@ -559,15 +648,13 @@ window.scrolla = (function(window,document){
 		// recalculate sizes
 		inst.viewportW = inst.base.offsetWidth;
 		inst.viewportH = inst.base.offsetHeight;
-		//inst.viewportW = inst.viewport.offsetWidth;
-		//inst.viewportH = inst.viewport.offsetHeight;
-		inst.viewportScrollW = inst.viewport.scrollWidth;// + (inst.allInline?-scrollBarSize:0); // todo: changes after initWrapper for inline content
-		inst.viewportScrollH = inst.viewport.scrollHeight;// + (inst.allInline?-scrollBarSize:0);
+		inst.viewportScrollW = inst.viewport.scrollWidth;
+		inst.viewportScrollH = inst.viewport.scrollHeight;
 		inst.barHorSize = getBarSize(inst,true);
 		inst.barVerSize = getBarSize(inst,false);
 		// check inactive elements
-		var isHorInActive = inst.viewportScrollW<=inst.viewportW
-			,isVerInActive = inst.viewportScrollH<=inst.viewportH;
+		var isHorInActive = inst.hidden==='x'?true:inst.viewportScrollW<=inst.viewportW
+			,isVerInActive = inst.hidden==='y'?true:inst.viewportScrollH<=inst.viewportH;
 		inst.gutterHor.classList.toggle(classnameInactive,isHorInActive);
 		inst.gutterVer.classList.toggle(classnameInactive,isVerInActive);
 		inst.left.classList.toggle(classnameInactive,isHorInActive);
@@ -610,7 +697,6 @@ window.scrolla = (function(window,document){
 		if (horizontal) {
 			inst.barHorPos = inst.viewportScrollW===0?0:(inst.viewport.scrollLeft/inst.viewportScrollW)*inst.viewportW;
 			inst.barHorStyle.left = inst.barHorPos + stringPx;
-			//console.log('setBarPos',inst.viewportScrollW,inst.viewport.scrollWidth,inst.viewport.scrollLeft); // log
 		} else {
 			inst.barVerPos = inst.viewportScrollH===0?0:(inst.viewport.scrollTop/inst.viewportScrollH)*inst.viewportH;
 			inst.barVerStyle.top = inst.barVerPos + stringPx;
@@ -639,7 +725,7 @@ window.scrolla = (function(window,document){
 		var dir = getDirection(inst,horizontal)
 			,scrollDir = getScroll(horizontal)
 			,scrollFrom = parseFloat(inst.viewport[scrollDir])
-			,scrollTo = scrollFrom + (forward?1:-1)*dir.viewportSize
+			,scrollTo = scrollFrom + (forward?1:-1)*stepSize*dir.viewportSize
 		;
 		inst.viewport[scrollDir] = scrollTo;
 		setBarPos(inst,horizontal);
@@ -662,6 +748,7 @@ window.scrolla = (function(window,document){
 	 */
 	function disenable(inst,enable){
 		inst.base.classList.toggle(classnameDisabled,!enable);
+		inst.base.style.height = (inst.viewportH+(enable?0:scrollBarSize))+stringPx;
 	}
 
 	/**
@@ -675,7 +762,9 @@ window.scrolla = (function(window,document){
 			,inner = createDiv()
 			,widthNoScroll
 			,widthWithScroll
+			,classNameTestSize = 'test'+Date.now()
 		;
+		outer.classList.add(classNameTestSize);
 		outer.style.visibility = 'hidden';
 		outer.style.width = '100px';
 		outer.style.msOverflowStyle = 'scrollbar';
@@ -717,7 +806,7 @@ window.scrolla = (function(window,document){
 	 */
 	function insertRule(css){
 		var sheet = getStyleSheet();
-		sheet.insertRule(css,0);
+		try{sheet.insertRule(css,0);}catch(err){console.warn(err,css);}
 		return sheet.cssRules[0];
 	}
 
@@ -853,6 +942,7 @@ window.scrolla = (function(window,document){
  * @property {Function} animatedStepCallback
  * @property {scrollaDirection} hor
  * @property {scrollaDirection} ver
+ * @property {string} hidden The vieport overflow is hidden for: 'x' or 'y'
  */
 /**
  * The scrolla direction (horizontal or vertical)

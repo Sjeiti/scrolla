@@ -24,7 +24,7 @@ iddqd.ns('jsdoc.scrolla',(function(){
 	}
 
 	function initScripts(){
-		return loadScript('dist/scrolla.js');
+		return loadScript('dist/scrolla.js'+('?a='+Date.now()));
 	}
 
 	function initVersion(){
@@ -115,11 +115,14 @@ iddqd.ns('jsdoc.scrolla',(function(){
 					,contains = classList.contains.bind(classList)
 					,code = pre.querySelector('code')
 					,codeContent = code.textContent;
-				console.log('pre',pre); // log
+				console.log('pre',pre,contains('lang-javascript')); // log
 				if (contains('lang-javascript')) {
+					console.log('evil'); // log
 					// jshint evil:true
-					eval(codeContent);
+					try{eval(codeContent);}
+					catch(err){console.warn(err);}
 					// jshint evil:false
+					console.log('codeContent',codeContent); // log
 					// todo: add button disenable
 				} else if (contains('lang-css')) {
 					var style = document.createElement('style');

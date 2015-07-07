@@ -1,6 +1,6 @@
 {
   "name": "scrolla",
-  "version": "0.0.12",
+  "version": "0.1.0",
   "main": "dist/scrolla.min.js",
   "license": "MIT/GPL",
   "licenses": [

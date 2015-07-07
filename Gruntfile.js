@@ -159,14 +159,16 @@ module.exports = function (grunt) {
 	]);
 
 	grunt.registerTask('doc',[
-		'clean:jsdoc'
+		'dist'
+		,'clean:jsdoc'
 		,'cli:jsdocprepare'
 		,'cli:jsdoc'
 		,'copy:dist2doc'
 	]);
 
 	grunt.registerTask('jsdoc',[
-		'clean:jsdoc'
+		'dist'
+		,'clean:jsdoc'
 		,'cli:jsdocprepare'
 		,'cli:jsdoc'
 		,'copy:dist2doc'

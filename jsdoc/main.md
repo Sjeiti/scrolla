@@ -110,12 +110,9 @@ The `scrolla.init` method takes an options object as the first argument:
 	/**/
 </style>
 
-(see examples folder in repository)
-
-
 ### default behavior
 
-The default sort simply sorts the text of each element
+By default a horizontal- and vertical gutter and bar are added depending on the viewport overflow settings.
 
 <style>
 	.instance1 {
@@ -128,6 +125,7 @@ The default sort simply sorts the text of each element
 		width:1500px;
 		background-color: #CCC;
 		background-image: repeating-linear-gradient(45deg, transparent, transparent 128px, #DDD 128px, #DDD 256px);
+		background-image: -webkit-repeating-linear-gradient(45deg, transparent, transparent 128px, #DDD 128px, #DDD 256px);
 	}
 </style>
 <div class="instance1">
@@ -141,28 +139,26 @@ scrolla(document.querySelector('.instance1'));
 
 ### Easy CSS styling
 
+Initial CSS styles are minimal and added to the document stylesheets so you can easily override them. When initialising you can also supply a className or id.
+
 <div class="target-css"><p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer vehicula quam nibh, eu tristique tellus dignissim quis. Integer condimentum ultrices elit ut mattis. Praesent rhoncus tortor metus, nec pellentesque enim mattis nec. Nulla vitae turpis ut dui consectetur pellentesque quis vel est. Curabitur rutrum, mauris ut mollis lobortis, sem est congue lectus, ut sodales nunc leo a libero. Cras quis sapien in mi fringilla tempus condimentum quis velit. Aliquam id aliquam arcu. Morbi tristique aliquam rutrum. Duis tincidunt, orci suscipit cursus molestie, purus nisi pharetra dui, tempor dignissim felis turpis in mi. Vivamus ullamcorper arcu sit amet mauris egestas egestas. Vestibulum turpis neque, condimentum a tincidunt quis, molestie vel justo. Sed molestie nunc dapibus arcu feugiat, ut sollicitudin metus sagittis. Aliquam a volutpat sem. Quisque id magna ultrices, lobortis dui eget, pretium libero. Curabitur aliquam in ante eu ultricies.</p></div>
 
 ``` css
 .target-css {
 	width: 60%;
 	height: 150px;
-	overflow: scroll;
+	overflow: hidden;
+	overflow-y: scroll;
 	background-color: #DDD;
 }
-.target-css p {
-	padding: 10px;
-}
-.instance-css .gutter {
-	background-color: #CCC;
-}
+.target-css p { padding: 10px; }
+.instance-css .gutter { background-color: #CCC; }
 .instance-css .bar {
 	border-radius: 15px;
 	background-color: #BBB;
+	box-shadow: -8px -8px 16px #777 inset;
 }
-.instance-css .horizontal {
-	top: -10px;
-}
+.instance-css .horizontal { top: -10px; }
 .instance-css .gutter.vertical {
 	right: 0;
 	width: 15px;
@@ -176,6 +172,8 @@ scrolla(document.querySelector('.target-css'),{class:'instance-css'});
 
 ### Positioned and animated
 
+A callback method 'animatedStepCallback' can be parsed to the options so you can apply animations by using your preferred animation library. In this example Greensock is used.
+
 <div class="target-anim">
 	<div class="left">&lt;</div>
 	<div class="right">&gt;</div>
@@ -188,7 +186,8 @@ scrolla(document.querySelector('.target-css'),{class:'instance-css'});
 	left: 25px;
 	width: 70%;
 	height: 70px;
-	overflow: scroll;
+	overflow: hidden;
+	overflow-x: scroll;
 	background-color: #EEE;
 }
 .target-anim div {
@@ -227,13 +226,18 @@ scrolla(element,{
 
 ### A list
 
-<style>
+<ul class="target-list"></ul>
+
+``` css
 .target-list {
 	width: 500px;
+	max-width: 500px;
 	padding-left: 0;
 	list-style: none;
 	white-space: nowrap;
 	background-color: gray;
+	overflow: hidden;
+	overflow-x: scroll;
 }
 .target-list li {
 	display: inline-block;
@@ -245,11 +249,10 @@ scrolla(element,{
 	text-align: center;
 	color: white;
 }
-.instance-list .bar {
+.instance-list>.gutter>.bar {
 	background-color: red;
 }
-</style>
-<ul class="target-list"> </ul>
+```
 
 ``` javascript
 var element = document.querySelector('.target-list');
