@@ -1,6 +1,6 @@
 {
   "name": "scrolla",
-  "version": "0.1.2",
+  "version": "0.1.4",
   "main": "dist/scrolla.min.js",
   "license": "MIT/GPL",
   "licenses": [
@@ -16,11 +16,13 @@
   "ignore": [
     "**/.*",
     "doc",
+    "gruntTasks",
     "examples",
     "jsdoc",
     "src",
     "src-dev",
     "Gruntfile.js",
+    "jsdoc.json",
     "package.json"
   ],
   "keywords": [

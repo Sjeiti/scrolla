@@ -1,6 +1,6 @@
 /**
  * Scrolla is a pure-js, cross-everything scrollbar script.
- * @version 0.1.2
+ * @version 0.1.4
  * @license MIT/GPL
  * @author Ron Valstar <ron@ronvalstar.nl>
  * @copyright Ron Valstar <ron@ronvalstar.nl>
@@ -416,16 +416,15 @@ window.scrolla = (function(window,document){
 			,defaultView = document.defaultView.getComputedStyle(element, null)
 			,viewportOverflowX = defaultView.getPropertyValue('overflow-x')
 			,viewportOverflowY = defaultView.getPropertyValue('overflow-y')
-			,baseStyle = inst.base.style;
+			,selectorId = '#'+inst.id
+			,baseRule = insertRule(selectorId+selectorBase+'{height:'+inst.viewportH+stringPx+';}')
+			,baseStyle = baseRule.style;
+		// set instance baseRule
+		inst.baseRule = baseRule;
+		// parse default styles
 		for (var cssProperty in defaultStyles) {
 			var styleValue = defaultStyles[cssProperty];
 			styleValue!==dimensionDefaultStyles[cssProperty]&&(baseStyle[cssProperty] = styleValue);
-		}
-		// if no height is set revert to offetHeight
-		if (baseStyle.height===''&&baseStyle.minHeight===''){
-			//baseStyle.height = inst.viewportH+stringPx;
-			inst.baseRule = insertRule('#'+inst.id+selectorViewport+'{'
-				+'height:'+inst.viewportH+stringPx+';}');
 		}
 		//
 		// check viewport overflow values
@@ -433,18 +432,14 @@ window.scrolla = (function(window,document){
 		if (viewportOverflowY==='auto') element.style.overflowY = 'scroll';
 		if (viewportOverflowX==='hidden') { // todo: check
 			inst.hidden = 'x';
-			insertRule(d+inst.class+selectorViewport+'{'
-				+'padding-bottom: 0; }');
-			insertRule(d+inst.class+selectorViewport+'>*:last-child {'
-				+'margin-bottom: 0; }');
-			insertRule(d+inst.class+selectorAllInline+'>* {'
-				+'margin-bottom: 0; }');
+			insertRule(selectorId+selectorViewport+'{padding-bottom: 0; }');
+			insertRule(selectorId+selectorViewport+'>*:last-child {margin-bottom: 0; }');
+			insertRule(selectorId+selectorAllInline+'>* {margin-bottom: 0; }');
 		}
 		if (viewportOverflowY==='hidden') {
 			inst.hidden = 'y';
-			baseStyle.height = (inst.viewportH-scrollBarSize)+stringPx;
-			insertRule(d+inst.class+selectorViewport+'{'
-				+'padding-right: 0; }');
+			baseRule.style.height = (inst.viewportH-scrollBarSize)+stringPx;
+			insertRule(selectorId+selectorViewport+'{padding-right: 0; }');
 		}
 		//
 		// structure
