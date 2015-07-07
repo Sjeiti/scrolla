@@ -236,7 +236,6 @@ window.scrolla = (function(window,document){
 			+'height: 100%;'
 			+'margin: 0;'
 			+'padding: 0 '+scrollBarSize+'px '+scrollBarSize+'px 0;}');
-			//+'overflow: scroll; }');
 		// viewport content
 		insertRule(selectorViewport+' * {'
 			+'box-sizing: border-box; }');
@@ -248,21 +247,14 @@ window.scrolla = (function(window,document){
 			+'margin-right: -'+scrollBarSize+'px; }');
 		//
 		// disable
-		//insertRule(selectorBaseDisabled+'{'
-		//	+'height: auto!important; }');
 		// wrapper
 		insertRule(selectorWrapperDisabled+'{'
 			+'position: static;'
-			//+'width: auto;'
-			//+'height: auto;'
 			+'overflow: auto; }');
 		// viewport
 		insertRule(selectorViewportDisabled+'{'
 			+'position: static;'
-			//+'width: auto;'
-			//+'height: auto;'
 			+'padding: 0;}');
-			//+'overflow: auto; }');
 		// ui
 		insertRule(selectorBaseDisabled+g+d+classnameGutter+','
 			+selectorBaseDisabled+g+d+classnameButton+' {'
@@ -426,12 +418,6 @@ window.scrolla = (function(window,document){
 		// if no height is set revert to offetHeight
 		if (baseStyle.height===''&&baseStyle.minHeight===''){
 			baseStyle.height = inst.viewportH+stringPx;
-			console.log('inst.viewportH',inst.viewportH); // log
-			console.log('inst.viewportH',inst.viewport.offsetHeight); // log
-			setTimeout(function(){
-				console.log('inst.viewportH',inst.viewportH); // log
-				console.log('inst.viewportH',inst.viewport.offsetHeight); // log
-			},40);
 		}
 		//
 		// check viewport overflow values
@@ -447,9 +433,9 @@ window.scrolla = (function(window,document){
 		}
 		if (viewportOverflowY==='hidden') {
 			baseStyle.height = (inst.viewportH-scrollBarSize)+stringPx;
+			insertRule(d+inst.class+selectorViewport+'{'
+				+'padding-right: 0; }');
 		}
-		console.log('initWrapper::scroll',defaultView.getPropertyValue('overflow-x'),defaultView.getPropertyValue('overflow-y')); // log
-		//
 		//
 		// structure
 		element.parentNode.insertBefore(inst.base,element);
@@ -762,6 +748,7 @@ window.scrolla = (function(window,document){
 	 */
 	function disenable(inst,enable){
 		inst.base.classList.toggle(classnameDisabled,!enable);
+		inst.base.style.height = (inst.viewportH+(enable?0:scrollBarSize))+stringPx;
 	}
 
 	/**
